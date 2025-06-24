@@ -14,8 +14,10 @@ namespace LibraryManagementAPI
 
             // Add services to the container.
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("LibraryManagementDB")));
-
+            {
+                options.UseSqlServer(builder.Configuration.GetSection
+                    ("ConnectionStrings:LibraryManagementDB").Value);
+            });
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;

@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repositories", "Repositorie
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "Services\Services.csproj", "{8D9EA251-3979-4E40-840C-C0AD478E6BC2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryManagementWebClient", "LibraryManagementWebClient\LibraryManagementWebClient.csproj", "{479A7C17-3CA1-46A6-9C4C-48C8CE5C02B8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{8D9EA251-3979-4E40-840C-C0AD478E6BC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D9EA251-3979-4E40-840C-C0AD478E6BC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D9EA251-3979-4E40-840C-C0AD478E6BC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{479A7C17-3CA1-46A6-9C4C-48C8CE5C02B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{479A7C17-3CA1-46A6-9C4C-48C8CE5C02B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{479A7C17-3CA1-46A6-9C4C-48C8CE5C02B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{479A7C17-3CA1-46A6-9C4C-48C8CE5C02B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
