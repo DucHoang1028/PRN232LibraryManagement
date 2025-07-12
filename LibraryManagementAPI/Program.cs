@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using DataAccessObjects;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
 using Services;
@@ -18,6 +19,20 @@ namespace LibraryManagementAPI
                 options.UseSqlServer(builder.Configuration.GetSection
                     ("ConnectionStrings:LibraryManagementDB").Value);
             });
+
+            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+
+                options.Password.RequiredLength = 8; // Minimum length
+                options.Password.RequireDigit = true; // Must contain a number
+                options.Password.RequireUppercase = true; // Must contain an uppercase letter
+                options.Password.RequireLowercase = true; // Must contain a lowercase letter
+                options.Password.RequireNonAlphanumeric = true; // Must contain special characters (e.g. @, #)
+            }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+
+            builder.Services.AddScoped<IAuthService, AuthService>();
+
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
