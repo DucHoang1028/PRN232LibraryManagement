@@ -1,6 +1,267 @@
-@LibraryManagementAPI_HostAddress = http://localhost:5127
+### Library Management API Test Examples
 
-GET {{LibraryManagementAPI_HostAddress}}/weatherforecast/
+### Books API
+
+# Get all books
+GET {{baseUrl}}/api/Books
 Accept: application/json
 
 ###
+
+# Get book by ID
+GET {{baseUrl}}/api/Books/{{bookId}}
+Accept: application/json
+
+###
+
+# Search books by title
+GET {{baseUrl}}/api/Books/search?title=programming
+Accept: application/json
+
+###
+
+# Search books by author
+GET {{baseUrl}}/api/Books/search?author=john
+Accept: application/json
+
+###
+
+# Search books by category
+GET {{baseUrl}}/api/Books/search?category=technology
+Accept: application/json
+
+###
+
+# Create a new book
+POST {{baseUrl}}/api/Books
+Content-Type: application/json
+
+{
+  "title": "C# Programming Guide",
+  "isbn": "978-0-123456-47-2",
+  "publisherId": "{{publisherId}}",
+  "description": "A comprehensive guide to C# programming",
+  "publicationDate": "2023-01-15",
+  "language": "English",
+  "totalCopies": 10,
+  "availableCopies": 10,
+  "rackNumber": "A1",
+  "barcode": "BC123456789"
+}
+
+###
+
+# Update a book
+PUT {{baseUrl}}/api/Books/{{bookId}}
+Content-Type: application/json
+
+{
+  "title": "Updated C# Programming Guide",
+  "isbn": "978-0-123456-47-2",
+  "publisherId": "{{publisherId}}",
+  "description": "An updated comprehensive guide to C# programming",
+  "publicationDate": "2023-01-15",
+  "language": "English",
+  "totalCopies": 12,
+  "availableCopies": 8,
+  "rackNumber": "A1",
+  "barcode": "BC123456789"
+}
+
+###
+
+# Delete a book
+DELETE {{baseUrl}}/api/Books/{{bookId}}
+
+###
+
+### Members API
+
+# Get all members
+GET {{baseUrl}}/api/Members
+Accept: application/json
+
+###
+
+# Get member by ID
+GET {{baseUrl}}/api/Members/{{memberId}}
+Accept: application/json
+
+###
+
+# Get member by email
+GET {{baseUrl}}/api/Members/email/john.doe@example.com
+Accept: application/json
+
+###
+
+# Get member by library card
+GET {{baseUrl}}/api/Members/card/LC202312011234
+Accept: application/json
+
+###
+
+# Create a new member
+POST {{baseUrl}}/api/Members
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "phone": "123-456-7890",
+  "address": "123 Main Street, City, State 12345",
+  "role": "Member"
+}
+
+###
+
+# Update a member
+PUT {{baseUrl}}/api/Members/{{memberId}}
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "email": "john.smith@example.com",
+  "phone": "123-456-7890",
+  "address": "456 Oak Avenue, City, State 12345",
+  "role": "Member"
+}
+
+###
+
+# Get member loans
+GET {{baseUrl}}/api/Members/{{memberId}}/loans
+Accept: application/json
+
+###
+
+# Get member reservations
+GET {{baseUrl}}/api/Members/{{memberId}}/reservations
+Accept: application/json
+
+###
+
+# Get member fines
+GET {{baseUrl}}/api/Members/{{memberId}}/fines
+Accept: application/json
+
+###
+
+# Check if member can checkout
+GET {{baseUrl}}/api/Members/{{memberId}}/can-checkout
+Accept: application/json
+
+###
+
+# Get member active loan count
+GET {{baseUrl}}/api/Members/{{memberId}}/active-loan-count
+Accept: application/json
+
+###
+
+# Deactivate member
+PUT {{baseUrl}}/api/Members/{{memberId}}/deactivate
+
+###
+
+# Delete member
+DELETE {{baseUrl}}/api/Members/{{memberId}}
+
+###
+
+### Loans API
+
+# Get all loans
+GET {{baseUrl}}/api/Loans
+Accept: application/json
+
+###
+
+# Get loan by ID
+GET {{baseUrl}}/api/Loans/{{loanId}}
+Accept: application/json
+
+###
+
+# Get active loans
+GET {{baseUrl}}/api/Loans/active
+Accept: application/json
+
+###
+
+# Get overdue loans
+GET {{baseUrl}}/api/Loans/overdue
+Accept: application/json
+
+###
+
+# Get loans by member
+GET {{baseUrl}}/api/Loans/member/{{memberId}}
+Accept: application/json
+
+###
+
+# Get loans by book
+GET {{baseUrl}}/api/Loans/book/{{bookId}}
+Accept: application/json
+
+###
+
+# Get loans due today
+GET {{baseUrl}}/api/Loans/due-today
+Accept: application/json
+
+###
+
+# Get loans due in 3 days
+GET {{baseUrl}}/api/Loans/due-in/3
+Accept: application/json
+
+###
+
+# Checkout a book
+POST {{baseUrl}}/api/Loans/checkout
+Content-Type: application/json
+
+{
+  "bookId": "{{bookId}}",
+  "memberId": "{{memberId}}"
+}
+
+###
+
+# Return a book
+PUT {{baseUrl}}/api/Loans/{{loanId}}/return
+
+###
+
+# Renew a book
+PUT {{baseUrl}}/api/Loans/{{loanId}}/renew
+
+###
+
+# Check book availability
+GET {{baseUrl}}/api/Loans/book/{{bookId}}/available
+Accept: application/json
+
+###
+
+# Check member eligibility
+GET {{baseUrl}}/api/Loans/member/{{memberId}}/eligible
+Accept: application/json
+
+###
+
+# Process overdue loans
+POST {{baseUrl}}/api/Loans/process-overdue
+
+###
+
+### Variables (set these in your environment or replace with actual values)
+@baseUrl = https://localhost:7001
+@bookId = 00000000-0000-0000-0000-000000000001
+@memberId = 00000000-0000-0000-0000-000000000002
+@loanId = 00000000-0000-0000-0000-000000000003
+@publisherId = 00000000-0000-0000-0000-000000000004

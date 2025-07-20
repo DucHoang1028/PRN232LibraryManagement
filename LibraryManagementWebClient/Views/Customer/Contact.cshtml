@@ -1,0 +1,110 @@
+@{
+    ViewData["Title"] = "Contact Us";
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Customer" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Contact</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">
+                    <i class="bi bi-envelope"></i> Get in Touch
+                </h3>
+            </div>
+            <div class="card-body">
+                <p class="lead">Have questions or need assistance? We're here to help!</p>
+                
+                <form>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="firstName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="lastName" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Subject</label>
+                        <select class="form-select" id="subject" required>
+                            <option value="">Choose a subject...</option>
+                            <option value="general">General Inquiry</option>
+                            <option value="membership">Membership Questions</option>
+                            <option value="books">Book Availability</option>
+                            <option value="technical">Technical Support</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="form-control" id="message" rows="5" placeholder="Please describe your inquiry..." required></textarea>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send"></i> Send Message
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow mb-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-geo-alt"></i> Visit Us
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-2"><strong>Address:</strong></p>
+                <p class="text-muted">123 Library Street<br>City, State 12345</p>
+                
+                <p class="mb-2"><strong>Phone:</strong></p>
+                <p class="text-muted">(555) 123-4567</p>
+                
+                <p class="mb-2"><strong>Email:</strong></p>
+                <p class="text-muted">info@library.com</p>
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-clock"></i> Hours of Operation
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2"><strong>Monday - Friday:</strong> 9:00 AM - 8:00 PM</li>
+                    <li class="mb-2"><strong>Saturday:</strong> 10:00 AM - 6:00 PM</li>
+                    <li class="mb-2"><strong>Sunday:</strong> 12:00 PM - 5:00 PM</li>
+                </ul>
+                <small class="text-muted">*Closed on major holidays</small>
+            </div>
+        </div>
+    </div>
+</div> 

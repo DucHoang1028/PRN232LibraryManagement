@@ -110,6 +110,13 @@ namespace DataAccessObjects
                 .HasOne(l => l.Member)
                 .WithMany(m => m.Loans)
                 .HasForeignKey(l => l.MemberId);
+
+            // Add this to prevent cascade delete cycles
+            modelBuilder.Entity<Fine>()
+                .HasOne(f => f.Member)
+                .WithMany(m => m.Fines)
+                .HasForeignKey(f => f.MemberId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

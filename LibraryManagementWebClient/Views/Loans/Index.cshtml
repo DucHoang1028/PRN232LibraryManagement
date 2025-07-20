@@ -1,0 +1,199 @@
+@model List<Loan>
+@{
+    ViewData["Title"] = "Loans";
+}
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-5 text-primary">
+            <i class="bi bi-arrow-left-right"></i> Loans
+        </h1>
+        <p class="lead text-muted">Manage book loans and returns</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a asp-action="Create" class="btn btn-success btn-lg">
+            <i class="bi bi-plus-circle"></i> New Loan
+        </a>
+    </div>
+</div>
+
+@if (Model.Any())
+{
+    <div class="card shadow">
+        <div class="card-header">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul"></i> All Loans (@Model.Count)
+                    </h5>
+                </div>
+                <div class="col-md-6">
+                    <div class="btn-group float-end" role="group">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="filterLoans('all')">All</button>
+                        <button type="button" class="btn btn-outline-success btn-sm" onclick="filterLoans('active')">Active</button>
+                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="filterLoans('overdue')">Overdue</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="filterLoans('returned')">Returned</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="loansTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Book</th>
+                            <th>Member</th>
+                            <th>Checkout Date</th>
+                            <th>Due Date</th>
+                            <th>Return Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var loan in Model.OrderByDescending(l => l.CheckoutDate))
+                        {
+                            var isOverdue = loan.Status == "Active" && loan.DueDate < DateTime.Today;
+                            <tr class="loan-row @(loan.Status.ToLower()) @(isOverdue ? "table-warning" : "")">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <i class="bi bi-book text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <strong>@loan.Book?.Title</strong>
+                                            <br>
+                                            <small class="text-muted">@loan.Book?.Isbn</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <i class="bi bi-person text-success"></i>
+                                        </div>
+                                        <div>
+                                            <strong>@loan.Member?.FirstName @loan.Member?.LastName</strong>
+                                            <br>
+                                            <small class="text-muted">@loan.Member?.LibraryCardNumber</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-muted">@loan.CheckoutDate.ToString("MMM dd, yyyy")</span>
+                                </td>
+                                <td>
+                                    <span class="@(isOverdue ? "text-danger fw-bold" : "text-muted")">
+                                        @loan.DueDate.ToString("MMM dd, yyyy")
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (loan.ReturnDate.HasValue)
+                                    {
+                                        <span class="text-success">@loan.ReturnDate.Value.ToString("MMM dd, yyyy")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (isOverdue)
+                                    {
+                                        <span class="badge bg-danger">Overdue</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge @(loan.Status == "Active" ? "bg-success" : "bg-secondary")">
+                                            @loan.Status
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@loan.LoanId" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        @if (loan.Status == "Active")
+                                        {
+                                            <form asp-action="Return" asp-route-id="@loan.LoanId" method="post" style="display: inline;">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-success btn-sm" onclick="return confirm('Are you sure you want to return this book?')" title="Return Book">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </button>
+                                            </form>
+                                            @if (!loan.IsRenewed && loan.DueDate > DateTime.Today)
+                                            {
+                                                <form asp-action="Renew" asp-route-id="@loan.LoanId" method="post" style="display: inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-outline-info btn-sm" onclick="return confirm('Are you sure you want to renew this book?')" title="Renew Book">
+                                                        <i class="bi bi-arrow-clockwise"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                        }
+                                        <a asp-action="Edit" asp-route-id="@loan.LoanId" class="btn btn-outline-warning btn-sm">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@loan.LoanId" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> 
+                Showing @Model.Count loan(s) in your library system.
+                <span class="badge bg-success ms-2">@Model.Count(l => l.Status == "Active") Active</span>
+                <span class="badge bg-warning ms-1">@Model.Count(l => l.Status == "Active" && l.DueDate < DateTime.Today) Overdue</span>
+                <span class="badge bg-secondary ms-1">@Model.Count(l => l.Status == "Returned") Returned</span>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-arrow-left-right display-1 text-muted mb-3"></i>
+                    <h4 class="text-muted">No Loans Found</h4>
+                    <p class="text-muted">Start managing book loans by creating your first loan record.</p>
+                    <a asp-action="Create" class="btn btn-success btn-lg">
+                        <i class="bi bi-plus-circle"></i> Create Your First Loan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function filterLoans(status) {
+            const rows = document.querySelectorAll('.loan-row');
+            rows.forEach(row => {
+                if (status === 'all') {
+                    row.style.display = '';
+                } else if (status === 'active') {
+                    row.style.display = row.classList.contains('active') ? '' : 'none';
+                } else if (status === 'overdue') {
+                    row.style.display = row.classList.contains('table-warning') ? '' : 'none';
+                } else if (status === 'returned') {
+                    row.style.display = row.classList.contains('returned') ? '' : 'none';
+                }
+            });
+        }
+    </script>
+} 

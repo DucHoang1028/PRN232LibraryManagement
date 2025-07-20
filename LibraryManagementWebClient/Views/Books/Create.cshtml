@@ -1,0 +1,158 @@
+@model Book
+@{
+    ViewData["Title"] = "Add New Book";
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Books</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Add New Book</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-plus-circle"></i> Add New Book
+                </h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label asp-for="Title" class="form-label">Book Title *</label>
+                                <input asp-for="Title" class="form-control" placeholder="Enter book title">
+                                <span asp-validation-for="Title" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Isbn" class="form-label">ISBN *</label>
+                                <input asp-for="Isbn" class="form-control" placeholder="e.g., 978-0747532699">
+                                <span asp-validation-for="Isbn" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="PublisherId" class="form-label">Publisher *</label>
+                                <select asp-for="PublisherId" class="form-select" asp-items="@(new SelectList(ViewBag.Publishers, "PublisherId", "Name"))">
+                                    <option value="">-- Select Publisher --</option>
+                                </select>
+                                <span asp-validation-for="PublisherId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Language" class="form-label">Language *</label>
+                                <input asp-for="Language" class="form-control" placeholder="e.g., English">
+                                <span asp-validation-for="Language" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Description</label>
+                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Enter book description..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="PublicationDate" class="form-label">Publication Date *</label>
+                                <input asp-for="PublicationDate" class="form-control" type="date">
+                                <span asp-validation-for="PublicationDate" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="TotalCopies" class="form-label">Total Copies *</label>
+                                <input asp-for="TotalCopies" class="form-control" type="number" min="0" placeholder="0">
+                                <span asp-validation-for="TotalCopies" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="AvailableCopies" class="form-label">Available Copies *</label>
+                                <input asp-for="AvailableCopies" class="form-control" type="number" min="0" placeholder="0">
+                                <span asp-validation-for="AvailableCopies" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="RackNumber" class="form-label">Rack Number *</label>
+                                <input asp-for="RackNumber" class="form-control" placeholder="e.g., A1-FAN-001">
+                                <span asp-validation-for="RackNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Barcode" class="form-label">Barcode *</label>
+                                <input asp-for="Barcode" class="form-control" placeholder="e.g., BK001">
+                                <span asp-validation-for="Barcode" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox">
+                            <label asp-for="IsActive" class="form-check-label">
+                                Book is active and available for loan
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to List
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Create Book
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Auto-set available copies to total copies when total copies changes
+        document.getElementById('TotalCopies').addEventListener('change', function() {
+            const totalCopies = parseInt(this.value) || 0;
+            const availableCopies = document.getElementById('AvailableCopies');
+            if (availableCopies.value === '' || parseInt(availableCopies.value) > totalCopies) {
+                availableCopies.value = totalCopies;
+            }
+        });
+
+        // Validate available copies cannot exceed total copies
+        document.getElementById('AvailableCopies').addEventListener('change', function() {
+            const availableCopies = parseInt(this.value) || 0;
+            const totalCopies = parseInt(document.getElementById('TotalCopies').value) || 0;
+            if (availableCopies > totalCopies) {
+                alert('Available copies cannot exceed total copies');
+                this.value = totalCopies;
+            }
+        });
+    </script>
+} 

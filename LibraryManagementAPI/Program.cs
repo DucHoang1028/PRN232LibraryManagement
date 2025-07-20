@@ -31,7 +31,18 @@ namespace LibraryManagementAPI
                 options.Password.RequireNonAlphanumeric = true; // Must contain special characters (e.g. @, #)
             }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
+            // Register repositories
+            builder.Services.AddScoped<IBookRepository, BookRepository>();
+            builder.Services.AddScoped<IMemberRepository, MemberRepository>();
+            builder.Services.AddScoped<ILoanRepository, LoanRepository>();
+
+            // Register services
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IBookService, BookService>();
+            builder.Services.AddScoped<IMemberService, MemberService>();
+            builder.Services.AddScoped<ILoanService, LoanService>();
+            builder.Services.AddScoped<IPublisherService, PublisherService>();
+            builder.Services.AddScoped<IFineService, FineService>();
 
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
@@ -39,7 +50,6 @@ namespace LibraryManagementAPI
                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
             });            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddScoped<IBookService, BookService>();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
@@ -52,7 +62,6 @@ namespace LibraryManagementAPI
             }
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 

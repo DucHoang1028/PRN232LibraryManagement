@@ -1,0 +1,213 @@
+@model CustomerDashboardViewModel
+@{
+    ViewData["Title"] = "Welcome to Our Library";
+}
+
+<!-- Hero Section -->
+<div class="hero-section bg-primary text-white py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-3">Welcome to Our Library</h1>
+                <p class="lead mb-4">Discover thousands of books, from classic literature to modern bestsellers. Your journey to knowledge starts here.</p>
+                <div class="d-flex gap-3">
+                    <a asp-action="Catalog" class="btn btn-light btn-lg">
+                        <i class="bi bi-search"></i> Browse Catalog
+                    </a>
+                    <a asp-action="About" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-info-circle"></i> Learn More
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="bi bi-book display-1 text-light opacity-75"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Section -->
+<div class="container mb-5">
+    <div class="row text-center">
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <i class="bi bi-book text-primary display-6 mb-3"></i>
+                    <h3 class="text-primary mb-2">@Model.TotalBooks</h3>
+                    <p class="text-muted mb-0">Total Books</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <i class="bi bi-check-circle text-success display-6 mb-3"></i>
+                    <h3 class="text-success mb-2">@Model.AvailableBooks</h3>
+                    <p class="text-muted mb-0">Available Books</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <i class="bi bi-people text-info display-6 mb-3"></i>
+                    <h3 class="text-info mb-2">24/7</h3>
+                    <p class="text-muted mb-0">Online Access</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <i class="bi bi-star text-warning display-6 mb-3"></i>
+                    <h3 class="text-warning mb-2">Free</h3>
+                    <p class="text-muted mb-0">Membership</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Books Section -->
+@if (Model.FeaturedBooks.Any())
+{
+    <div class="container mb-5">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="text-center mb-3">
+                    <i class="bi bi-star-fill text-warning"></i> Featured Books
+                </h2>
+                <p class="text-center text-muted">Discover our latest additions and popular titles</p>
+            </div>
+        </div>
+        <div class="row">
+            @foreach (var book in Model.FeaturedBooks)
+            {
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm book-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title text-truncate">@book.Title</h5>
+                                <span class="badge @(book.AvailableCopies > 0 ? "bg-success" : "bg-danger")">
+                                    @(book.AvailableCopies > 0 ? "Available" : "Unavailable")
+                                </span>
+                            </div>
+                            <p class="card-text text-muted small mb-2">
+                                <i class="bi bi-person"></i> @(book.Publisher?.Name ?? "Unknown Publisher")
+                            </p>
+                            <p class="card-text text-muted small mb-2">
+                                <i class="bi bi-calendar"></i> @book.PublicationDate.ToString("yyyy")
+                            </p>
+                            @if (!string.IsNullOrEmpty(book.Description))
+                            {
+                                <p class="card-text small">@(book.Description.Length > 100 ? book.Description.Substring(0, 100) + "..." : book.Description)</p>
+                            }
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-book"></i> @book.AvailableCopies of @book.TotalCopies copies
+                                </small>
+                                <a asp-action="BookDetails" asp-route-id="@book.BookId" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye"></i> View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<!-- Recent Books Section -->
+@if (Model.RecentBooks.Any())
+{
+    <div class="container mb-5">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="text-center mb-3">
+                    <i class="bi bi-clock text-info"></i> Recently Added
+                </h2>
+                <p class="text-center text-muted">Check out our newest arrivals</p>
+            </div>
+        </div>
+        <div class="row">
+            @foreach (var book in Model.RecentBooks.Take(6))
+            {
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm book-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h6 class="card-title text-truncate">@book.Title</h6>
+                                <span class="badge @(book.AvailableCopies > 0 ? "bg-success" : "bg-danger") small">
+                                    @(book.AvailableCopies > 0 ? "Available" : "Unavailable")
+                                </span>
+                            </div>
+                            <p class="card-text text-muted small mb-2">
+                                <i class="bi bi-person"></i> @(book.Publisher?.Name ?? "Unknown Publisher")
+                            </p>
+                            <p class="card-text text-muted small mb-2">
+                                <i class="bi bi-calendar"></i> @book.PublicationDate.ToString("yyyy")
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-book"></i> @book.AvailableCopies copies
+                                </small>
+                                <a asp-action="BookDetails" asp-route-id="@book.BookId" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="text-center">
+            <a asp-action="Catalog" class="btn btn-primary btn-lg">
+                <i class="bi bi-arrow-right"></i> View All Books
+            </a>
+        </div>
+    </div>
+}
+
+<!-- Call to Action -->
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-lg-8 mx-auto">
+                <h3 class="mb-3">Ready to Start Reading?</h3>
+                <p class="lead text-muted mb-4">Join our community of readers and explore our vast collection of books.</p>
+                <div class="d-flex gap-3 justify-content-center">
+                    <a asp-action="Catalog" class="btn btn-primary btn-lg">
+                        <i class="bi bi-search"></i> Browse Catalog
+                    </a>
+                    <a asp-action="Contact" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-envelope"></i> Contact Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    }
+    
+    .book-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    
+    .book-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .card {
+        border-radius: 0.75rem;
+    }
+    
+    .btn {
+        border-radius: 0.5rem;
+    }
+</style> 

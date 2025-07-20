@@ -1,0 +1,112 @@
+@model Member
+@{
+    ViewData["Title"] = "Delete Member";
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Members</a></li>
+                <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.MemberId">@Model.FirstName @Model.LastName</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Delete</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> Delete Member
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning" role="alert">
+                    <h5 class="alert-heading">
+                        <i class="bi bi-exclamation-triangle"></i> Warning!
+                    </h5>
+                    <p class="mb-0">
+                        Are you sure you want to delete this member? This action cannot be undone.
+                    </p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Name:</dt>
+                            <dd class="col-sm-8">@Model.FirstName @Model.LastName</dd>
+
+                            <dt class="col-sm-4">Email:</dt>
+                            <dd class="col-sm-8">@Model.Email</dd>
+
+                            <dt class="col-sm-4">Phone:</dt>
+                            <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.Phone) ? "Not provided" : Model.Phone)</dd>
+
+                            <dt class="col-sm-4">Role:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-info">@Model.Role</span>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Card Number:</dt>
+                            <dd class="col-sm-8">@Model.LibraryCardNumber</dd>
+
+                            <dt class="col-sm-4">Barcode:</dt>
+                            <dd class="col-sm-8">@Model.Barcode</dd>
+
+                            <dt class="col-sm-4">Join Date:</dt>
+                            <dd class="col-sm-8">@Model.JoinDate.ToString("MMMM dd, yyyy")</dd>
+
+                            <dt class="col-sm-4">Status:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary")">
+                                    @(Model.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+
+                @if (Model.Loans.Any())
+                {
+                    <div class="alert alert-info mt-3">
+                        <h6>
+                            <i class="bi bi-info-circle"></i> Active Loans Found
+                        </h6>
+                        <p class="mb-0">
+                            This member has @Model.Loans.Count active loan(s). Deleting this member may affect loan records.
+                        </p>
+                    </div>
+                }
+
+                @if (Model.Fines.Any())
+                {
+                    <div class="alert alert-info">
+                        <h6>
+                            <i class="bi bi-info-circle"></i> Active Fines Found
+                        </h6>
+                        <p class="mb-0">
+                            This member has @Model.Fines.Count active fine(s). Deleting this member may affect fine records.
+                        </p>
+                    </div>
+                }
+
+                <form asp-action="Delete" method="post" class="mt-4">
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Details" asp-route-id="@Model.MemberId" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Delete Member
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div> 

@@ -1,0 +1,271 @@
+{
+  "books": [
+    {
+      "title": "The Pragmatic Programmer",
+      "isbn": "978-0135957059",
+      "publisherId": "00000000-0000-0000-0000-000000000001",
+      "description": "Your Journey to Mastery, 20th Anniversary Edition",
+      "publicationDate": "2019-09-13",
+      "language": "English",
+      "totalCopies": 5,
+      "availableCopies": 5,
+      "rackNumber": "A1",
+      "barcode": "BC001"
+    },
+    {
+      "title": "Clean Code: A Handbook of Agile Software Craftsmanship",
+      "isbn": "978-0132350884",
+      "publisherId": "00000000-0000-0000-0000-000000000001",
+      "description": "Even bad code can function. But if code isn't clean, it can bring a development organization to its knees.",
+      "publicationDate": "2008-08-11",
+      "language": "English",
+      "totalCopies": 3,
+      "availableCopies": 3,
+      "rackNumber": "A2",
+      "barcode": "BC002"
+    },
+    {
+      "title": "Design Patterns: Elements of Reusable Object-Oriented Software",
+      "isbn": "978-0201633610",
+      "publisherId": "00000000-0000-0000-0000-000000000002",
+      "description": "The classic book on design patterns",
+      "publicationDate": "1994-10-31",
+      "language": "English",
+      "totalCopies": 4,
+      "availableCopies": 4,
+      "rackNumber": "A3",
+      "barcode": "BC003"
+    },
+    {
+      "title": "Refactoring: Improving the Design of Existing Code",
+      "isbn": "978-0134757599",
+      "publisherId": "00000000-0000-0000-0000-000000000001",
+      "description": "Martin Fowler's guide to refactoring",
+      "publicationDate": "2018-11-19",
+      "language": "English",
+      "totalCopies": 2,
+      "availableCopies": 2,
+      "rackNumber": "A4",
+      "barcode": "BC004"
+    },
+    {
+      "title": "C# in Depth",
+      "isbn": "978-1617294532",
+      "publisherId": "00000000-0000-0000-0000-000000000003",
+      "description": "Fourth Edition - Comprehensive guide to C#",
+      "publicationDate": "2019-03-15",
+      "language": "English",
+      "totalCopies": 6,
+      "availableCopies": 6,
+      "rackNumber": "B1",
+      "barcode": "BC005"
+    }
+  ],
+  "members": [
+    {
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com",
+      "phone": "555-0101",
+      "address": "123 Main Street, Anytown, ST 12345",
+      "role": "Member"
+    },
+    {
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "email": "jane.smith@example.com",
+      "phone": "555-0102",
+      "address": "456 Oak Avenue, Somewhere, ST 67890",
+      "role": "Member"
+    },
+    {
+      "firstName": "Bob",
+      "lastName": "Johnson",
+      "email": "bob.johnson@example.com",
+      "phone": "555-0103",
+      "address": "789 Pine Road, Elsewhere, ST 11111",
+      "role": "Member"
+    },
+    {
+      "firstName": "Alice",
+      "lastName": "Williams",
+      "email": "alice.williams@example.com",
+      "phone": "555-0104",
+      "address": "321 Elm Street, Nowhere, ST 22222",
+      "role": "Member"
+    },
+    {
+      "firstName": "Charlie",
+      "lastName": "Brown",
+      "email": "charlie.brown@example.com",
+      "phone": "555-0105",
+      "address": "654 Maple Drive, Anywhere, ST 33333",
+      "role": "Member"
+    }
+  ],
+  "publishers": [
+    {
+      "name": "Addison-Wesley Professional",
+      "address": "75 Arlington Street, Suite 300, Boston, MA 02116"
+    },
+    {
+      "name": "Prentice Hall",
+      "address": "One Lake Street, Upper Saddle River, NJ 07458"
+    },
+    {
+      "name": "Manning Publications",
+      "address": "20 Baldwin Road, Shelter Island, NY 11964"
+    }
+  ],
+  "authors": [
+    {
+      "firstName": "Andrew",
+      "lastName": "Hunt"
+    },
+    {
+      "firstName": "David",
+      "lastName": "Thomas"
+    },
+    {
+      "firstName": "Robert",
+      "lastName": "Martin"
+    },
+    {
+      "firstName": "Erich",
+      "lastName": "Gamma"
+    },
+    {
+      "firstName": "Richard",
+      "lastName": "Helm"
+    },
+    {
+      "firstName": "Ralph",
+      "lastName": "Johnson"
+    },
+    {
+      "firstName": "John",
+      "lastName": "Vlissides"
+    },
+    {
+      "firstName": "Jon",
+      "lastName": "Skeet"
+    }
+  ],
+  "categories": [
+    {
+      "name": "Programming"
+    },
+    {
+      "name": "Software Engineering"
+    },
+    {
+      "name": "Design Patterns"
+    },
+    {
+      "name": "C#"
+    },
+    {
+      "name": "Clean Code"
+    },
+    {
+      "name": "Refactoring"
+    }
+  ],
+  "bookAuthors": [
+    {
+      "bookId": "00000000-0000-0000-0000-000000000001",
+      "authorId": "00000000-0000-0000-0000-000000000001"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000001",
+      "authorId": "00000000-0000-0000-0000-000000000002"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000002",
+      "authorId": "00000000-0000-0000-0000-000000000003"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000003",
+      "authorId": "00000000-0000-0000-0000-000000000004"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000003",
+      "authorId": "00000000-0000-0000-0000-000000000005"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000003",
+      "authorId": "00000000-0000-0000-0000-000000000006"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000003",
+      "authorId": "00000000-0000-0000-0000-000000000007"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000004",
+      "authorId": "00000000-0000-0000-0000-000000000003"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000005",
+      "authorId": "00000000-0000-0000-0000-000000000008"
+    }
+  ],
+  "bookCategories": [
+    {
+      "bookId": "00000000-0000-0000-0000-000000000001",
+      "categoryId": "00000000-0000-0000-0000-000000000001"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000001",
+      "categoryId": "00000000-0000-0000-0000-000000000002"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000002",
+      "categoryId": "00000000-0000-0000-0000-000000000001"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000002",
+      "categoryId": "00000000-0000-0000-0000-000000000005"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000003",
+      "categoryId": "00000000-0000-0000-0000-000000000003"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000004",
+      "categoryId": "00000000-0000-0000-0000-000000000001"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000004",
+      "categoryId": "00000000-0000-0000-0000-000000000006"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000005",
+      "categoryId": "00000000-0000-0000-0000-000000000004"
+    }
+  ],
+  "loans": [
+    {
+      "bookId": "00000000-0000-0000-0000-000000000001",
+      "memberId": "00000000-0000-0000-0000-000000000001",
+      "checkoutDate": "2024-01-15T10:00:00Z",
+      "dueDate": "2024-01-25T10:00:00Z",
+      "status": "Active"
+    },
+    {
+      "bookId": "00000000-0000-0000-0000-000000000002",
+      "memberId": "00000000-0000-0000-0000-000000000002",
+      "checkoutDate": "2024-01-10T14:30:00Z",
+      "dueDate": "2024-01-20T14:30:00Z",
+      "status": "Active"
+    }
+  ],
+  "reservations": [
+    {
+      "bookId": "00000000-0000-0000-0000-000000000003",
+      "memberId": "00000000-0000-0000-0000-000000000003",
+      "reservationDate": "2024-01-16T09:00:00Z",
+      "expiryDate": "2024-01-23T09:00:00Z",
+      "status": "Active"
+    }
+  ]
+} 

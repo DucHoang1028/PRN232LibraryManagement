@@ -1,0 +1,235 @@
+@model Loan
+@{
+    ViewData["Title"] = "Loan Details";
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Loans</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Loan #@Model.LoanId</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-arrow-left-right"></i> Loan Details
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Book:</dt>
+                            <dd class="col-sm-8">
+                                <a asp-controller="Books" asp-action="Details" asp-route-id="@Model.BookId">
+                                    @Model.Book?.Title
+                                </a>
+                            </dd>
+
+                            <dt class="col-sm-4">Member:</dt>
+                            <dd class="col-sm-8">
+                                <a asp-controller="Members" asp-action="Details" asp-route-id="@Model.MemberId">
+                                    @Model.Member?.FirstName @Model.Member?.LastName
+                                </a>
+                            </dd>
+
+                            <dt class="col-sm-4">Checkout Date:</dt>
+                            <dd class="col-sm-8">@Model.CheckoutDate.ToString("MMMM dd, yyyy")</dd>
+
+                            <dt class="col-sm-4">Due Date:</dt>
+                            <dd class="col-sm-8">
+                                <span class="@(Model.DueDate < DateTime.Today && Model.Status == "Active" ? "text-danger fw-bold" : "")">
+                                    @Model.DueDate.ToString("MMMM dd, yyyy")
+                                </span>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Return Date:</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.ReturnDate.HasValue)
+                                {
+                                    <span class="text-success">@Model.ReturnDate.Value.ToString("MMMM dd, yyyy")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Not returned</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4">Status:</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.Status == "Active" && Model.DueDate < DateTime.Today)
+                                {
+                                    <span class="badge bg-danger">Overdue</span>
+                                }
+                                else
+                                {
+                                    <span class="badge @(Model.Status == "Active" ? "bg-success" : "bg-secondary")">
+                                        @Model.Status
+                                    </span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4">Renewed:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge @(Model.IsRenewed ? "bg-info" : "bg-secondary")">
+                                    @(Model.IsRenewed ? "Yes" : "No")
+                                </span>
+                            </dd>
+
+                            <dt class="col-sm-4">Renewal Count:</dt>
+                            <dd class="col-sm-8">@Model.RenewalCount</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <div class="mt-3">
+                        <h6>Notes:</h6>
+                        <p class="text-muted">@Model.Notes</p>
+                    </div>
+                }
+
+                <div class="mt-3">
+                    <h6>System Information:</h6>
+                    <small class="text-muted">
+                        Created: @Model.CreatedDate.ToString("MMM dd, yyyy HH:mm") |
+                        @if (Model.UpdatedDate.HasValue)
+                        {
+                            <span>Updated: @Model.UpdatedDate.Value.ToString("MMM dd, yyyy HH:mm")</span>
+                        }
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.Fine != null)
+        {
+            <div class="card shadow mt-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Fine Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Amount:</dt>
+                                <dd class="col-sm-8 text-danger fw-bold">$@Model.Fine.Amount</dd>
+
+                                <dt class="col-sm-4">Status:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge @(Model.Fine.IsPaid ? "bg-success" : "bg-danger")">
+                                        @(Model.Fine.IsPaid ? "Paid" : "Unpaid")
+                                    </span>
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Created:</dt>
+                                <dd class="col-sm-8">@Model.Fine.CreatedDate.ToString("MMM dd, yyyy")</dd>
+
+                                <dt class="col-sm-4">Paid Date:</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.Fine.PaidDate.HasValue)
+                                    {
+                                        @Model.Fine.PaidDate.Value.ToString("MMM dd, yyyy")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Fine.Description))
+                    {
+                        <div class="mt-3">
+                            <h6>Fine Description:</h6>
+                            <p class="text-muted">@Model.Fine.Description</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow mb-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-gear"></i> Actions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    @if (Model.Status == "Active")
+                    {
+                        <a asp-action="Return" asp-route-id="@Model.LoanId" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> Return Book
+                        </a>
+                        <a asp-action="Renew" asp-route-id="@Model.LoanId" class="btn btn-info">
+                            <i class="bi bi-arrow-clockwise"></i> Renew Loan
+                        </a>
+                    }
+                    <a asp-action="Edit" asp-route-id="@Model.LoanId" class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> Edit Loan
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.LoanId" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Delete Loan
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-info-circle"></i> Loan Summary
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-3">
+                            <h4 class="text-primary mb-0">@((Model.DueDate - Model.CheckoutDate).Days)</h4>
+                            <small class="text-muted">Loan Period (Days)</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-3">
+                            <h4 class="text-info mb-0">@Model.RenewalCount</h4>
+                            <small class="text-muted">Renewals</small>
+                        </div>
+                    </div>
+                    @if (Model.Status == "Active" && Model.DueDate < DateTime.Today)
+                    {
+                        <div class="col-12">
+                            <div class="border rounded p-3 bg-danger text-white">
+                                <h4 class="mb-0">@((DateTime.Today - Model.DueDate).Days)</h4>
+                                <small>Days Overdue</small>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

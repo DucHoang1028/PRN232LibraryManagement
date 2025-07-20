@@ -12,12 +12,17 @@ namespace BusinessObjects
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-
         public string? Phone { get; set; }
         public DateTime JoinDate { get; set; }
         public string? Address { get; set; }
-        public string Role { get; set; }
+        public string Role { get; set; } = "Member";
+        public string LibraryCardNumber { get; set; } = string.Empty;
+        public string Barcode { get; set; } = string.Empty;
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedDate { get; set; }
         public List<Loan> Loans { get; set; } = new();
         public List<Reservation> Reservations { get; set; } = new();
+        public List<Fine> Fines { get; set; } = new();
     }
 }

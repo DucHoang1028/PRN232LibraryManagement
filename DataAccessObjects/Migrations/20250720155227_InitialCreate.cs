@@ -86,7 +86,12 @@ namespace DataAccessObjects.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     JoinDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LibraryCardNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Barcode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -224,7 +229,12 @@ namespace DataAccessObjects.Migrations
                     PublicationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Language = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TotalCopies = table.Column<int>(type: "int", nullable: false),
-                    AvailableCopies = table.Column<int>(type: "int", nullable: false)
+                    AvailableCopies = table.Column<int>(type: "int", nullable: false),
+                    RackNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Barcode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -294,7 +304,12 @@ namespace DataAccessObjects.Migrations
                     MemberId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CheckoutDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ReturnDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    ReturnDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsRenewed = table.Column<bool>(type: "bit", nullable: false),
+                    RenewalCount = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -321,7 +336,12 @@ namespace DataAccessObjects.Migrations
                     BookId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MemberId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ReservationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FulfilledDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    NotificationSent = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -346,8 +366,13 @@ namespace DataAccessObjects.Migrations
                 {
                     FineId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     LoanId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MemberId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: false),
-                    Paid = table.Column<bool>(type: "bit", nullable: false)
+                    Paid = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PaidDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -358,6 +383,12 @@ namespace DataAccessObjects.Migrations
                         principalTable: "Loans",
                         principalColumn: "LoanId",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Fines_Members_MemberId",
+                        column: x => x.MemberId,
+                        principalTable: "Members",
+                        principalColumn: "MemberId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -425,6 +456,11 @@ namespace DataAccessObjects.Migrations
                 table: "Fines",
                 column: "LoanId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Fines_MemberId",
+                table: "Fines",
+                column: "MemberId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Loans_BookId",

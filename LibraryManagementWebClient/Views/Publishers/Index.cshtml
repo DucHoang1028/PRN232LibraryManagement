@@ -1,0 +1,135 @@
+@model List<Publisher>
+@{
+    ViewData["Title"] = "Publishers";
+}
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-5 text-primary">
+            <i class="bi bi-building"></i> Publishers
+        </h1>
+        <p class="lead text-muted">Manage book publishers and their information</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a asp-action="Create" class="btn btn-success btn-lg">
+            <i class="bi bi-plus-circle"></i> Add Publisher
+        </a>
+    </div>
+</div>
+
+@if (Model.Any())
+{
+    <div class="row">
+        @foreach (var publisher in Model)
+        {
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 text-truncate">@publisher.Name</h6>
+                            <span class="badge bg-light text-dark">@publisher.Books.Count books</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrEmpty(publisher.Email))
+                        {
+                            <p class="card-text text-muted small mb-2">
+                                <i class="bi bi-envelope"></i> @publisher.Email
+                            </p>
+                        }
+                        @if (!string.IsNullOrEmpty(publisher.Phone))
+                        {
+                            <p class="card-text text-muted small mb-2">
+                                <i class="bi bi-telephone"></i> @publisher.Phone
+                            </p>
+                        }
+                        @if (!string.IsNullOrEmpty(publisher.Website))
+                        {
+                            <p class="card-text text-muted small mb-2">
+                                <i class="bi bi-globe"></i> 
+                                <a href="@publisher.Website" target="_blank" class="text-decoration-none">@publisher.Website</a>
+                            </p>
+                        }
+                        <div class="row text-center mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Total Books</small>
+                                <div class="fw-bold">@publisher.Books.Count</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Active Books</small>
+                                <div class="fw-bold text-success">@publisher.Books.Count(b => b.IsActive)</div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar"></i> Added @publisher.CreatedDate.ToString("MMM yyyy")
+                            </small>
+                            <span class="badge @(publisher.IsActive ? "bg-success" : "bg-secondary")">
+                                @(publisher.IsActive ? "Active" : "Inactive")
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group w-100" role="group">
+                            <a asp-action="Details" asp-route-id="@publisher.PublisherId" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@publisher.PublisherId" class="btn btn-outline-warning btn-sm">
+                                <i class="bi bi-pencil"></i> Edit
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@publisher.PublisherId" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-trash"></i> Delete
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> 
+                Showing @Model.Count publisher(s) in your library system.
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-building display-1 text-muted mb-3"></i>
+                    <h4 class="text-muted">No Publishers Found</h4>
+                    <p class="text-muted">Start building your publisher database by adding your first publisher.</p>
+                    <a asp-action="Create" class="btn btn-success btn-lg">
+                        <i class="bi bi-plus-circle"></i> Add Your First Publisher
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .card {
+        transition: transform 0.2s ease-in-out;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    .btn-group .btn {
+        border-radius: 0;
+    }
+    .btn-group .btn:first-child {
+        border-top-left-radius: 0.375rem;
+        border-bottom-left-radius: 0.375rem;
+    }
+    .btn-group .btn:last-child {
+        border-top-right-radius: 0.375rem;
+        border-bottom-right-radius: 0.375rem;
+    }
+</style> 

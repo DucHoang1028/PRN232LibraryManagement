@@ -14,14 +14,18 @@ namespace BusinessObjects
         public Guid PublisherId { get; set; }
         public string Description { get; set; } = string.Empty;
         public DateTime PublicationDate { get; set; }
-        public string Language { get; set; }
+        public string Language { get; set; } = string.Empty;
         public int TotalCopies { get; set; }
         public int AvailableCopies { get; set; }
+        public string RackNumber { get; set; } = string.Empty;
+        public string Barcode { get; set; } = string.Empty;
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedDate { get; set; }
         public Publisher? Publisher { get; set; }
         public List<BookAuthor> BookAuthors { get; set; } = new();
         public List<BookCategory> BookCategories { get; set; } = new();
         public List<Loan> Loans { get; set; } = new();
         public List<Reservation> Reservations { get; set; } = new();
-
     }
 }

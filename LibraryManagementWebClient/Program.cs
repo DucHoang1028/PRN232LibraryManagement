@@ -1,3 +1,6 @@
+using LibraryManagementWebClient.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+
 namespace LibraryManagementWebClient
 {
     public class Program
@@ -8,6 +11,31 @@ namespace LibraryManagementWebClient
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            // Add HTTP client for API communication
+            builder.Services.AddHttpClient<ILibraryApiService, LibraryApiService>(client =>
+            {
+                client.BaseAddress = new Uri("http://localhost:5127/");
+            });
+
+            // Add authentication
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/Auth/Login";
+                    options.AccessDeniedPath = "/Auth/AccessDenied";
+                    options.LogoutPath = "/Auth/Logout";
+                    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+                    options.SlidingExpiration = true;
+                });
+
+            // Add authorization
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("StaffOnly", policy => policy.RequireRole("Staff"));
+                options.AddPolicy("MemberOnly", policy => policy.RequireRole("Member"));
+                options.AddPolicy("GuestOrHigher", policy => policy.RequireRole("Guest", "Member", "Staff"));
+            });
 
             var app = builder.Build();
 
@@ -20,6 +48,7 @@ namespace LibraryManagementWebClient
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(
