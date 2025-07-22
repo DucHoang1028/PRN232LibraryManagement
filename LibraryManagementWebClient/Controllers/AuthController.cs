@@ -1,4 +1,4 @@
-using LibraryManagementWebClient.Models;
+﻿using LibraryManagementWebClient.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
@@ -10,15 +10,18 @@ namespace LibraryManagementWebClient.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly ILibraryApiService _apiService;
+        private readonly ILibraryApiService _libraryApiService;
+        private readonly IApiService _apiService;
 
-        public AuthController(ILibraryApiService apiService)
+        public AuthController(ILibraryApiService apiService, IApiService apiService1)
         {
-            _apiService = apiService;
+            _libraryApiService = apiService;
+            _apiService = apiService1;
         }
 
         public IActionResult Login(string? returnUrl = null)
         {
+            // Keep track of where the user should be redirected after login
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
@@ -29,63 +32,72 @@ namespace LibraryManagementWebClient.Controllers
         {
             ViewData["ReturnUrl"] = returnUrl;
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(model);
+
+            try
             {
-                try
+                var loginResult = await _apiService.AuthenticateAsync(model.Email, model.Password);
+
+                if (loginResult == null || loginResult.Member == null)
                 {
-                    // Get member by email from API
-                    var member = await _apiService.GetMemberByEmailAsync(model.Email);
-                    
-                    if (member != null)
-                    {
-                        var claims = new List<Claim>
-                        {
-                            new Claim(ClaimTypes.Name, member.Email),
-                            new Claim(ClaimTypes.Role, member.Role), // Get role from member data
-                            new Claim(ClaimTypes.NameIdentifier, member.MemberId.ToString()),
-                            new Claim("FirstName", member.FirstName),
-                            new Claim("LastName", member.LastName),
-                            new Claim("MemberId", member.MemberId.ToString()),
-                            new Claim("LibraryCardNumber", member.LibraryCardNumber),
-                            new Claim("Phone", member.Phone ?? ""),
-                            new Claim("Address", member.Address ?? ""),
-                            new Claim("JoinDate", member.JoinDate.ToString("yyyy-MM-dd"))
-                        };
-
-                        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                        var authProperties = new AuthenticationProperties
-                        {
-                            IsPersistent = model.RememberMe,
-                            ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
-                        };
-
-                        await HttpContext.SignInAsync(
-                            CookieAuthenticationDefaults.AuthenticationScheme,
-                            new ClaimsPrincipal(claimsIdentity),
-                            authProperties);
-
-                        TempData["Success"] = $"Welcome back, {member.FirstName}! You are logged in as {member.Role}.";
-
-                        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                        {
-                            return Redirect(returnUrl);
-                        }
-
-                        return RedirectToAction("Index", "Customer");
-                    }
-                    else
-                    {
-                        ModelState.AddModelError(string.Empty, "Email not found. Please check your email or register for an account.");
-                    }
+                    ModelState.AddModelError(string.Empty, "Invalid email or password.");
+                    return View(model);
                 }
-                catch (Exception)
+
+                var member = loginResult.Member;
+
+                var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, member.Email),
+            new Claim(ClaimTypes.Role, member.Role),
+            new Claim(ClaimTypes.NameIdentifier, member.MemberId.ToString()),
+            new Claim("FirstName", member.FirstName),
+            new Claim("LastName", member.LastName),
+            new Claim("MemberId", member.MemberId.ToString()),
+            new Claim("LibraryCardNumber", member.LibraryCardNumber),
+            new Claim("Phone", member.Phone ?? ""),
+            new Claim("Address", member.Address ?? ""),
+            new Claim("JoinDate", member.JoinDate.ToString("yyyy-MM-dd"))
+        };
+
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+
+                var authProperties = new AuthenticationProperties
                 {
-                    ModelState.AddModelError(string.Empty, "Error connecting to the server. Please try again.");
-                }
+                    IsPersistent = model.RememberMe,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+                };
+
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    principal,
+                    authProperties
+                );
+
+                TempData["Success"] = $"Welcome back, {member.FirstName}! You are logged in as {member.Role}.";
+
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
+
+                return member.Role switch
+                {
+                    "Admin" => RedirectToAction("Index", "Home"),
+                    "Staff" => RedirectToAction("Index", "Dashboard"),
+                    "Member" => RedirectToAction("Index", "Home"),
+                    "Guest" => RedirectToAction("Guest", "AccessDenied"),
+                    _ => RedirectToAction("Index", "Home")
+                };
             }
-
-            return View(model);
+            catch (Exception)
+            {
+                ModelState.AddModelError(string.Empty, "Error connecting to the server. Please try again.");
+                return View(model);
+            }
         }
+
+
 
         public IActionResult Register()
         {
@@ -140,12 +152,9 @@ namespace LibraryManagementWebClient.Models
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
 
-        // Password field commented out for now
-        /*
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
-        */
 
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
@@ -179,4 +188,12 @@ namespace LibraryManagementWebClient.Models
         [Display(Name = "Role")]
         public string Role { get; set; } = "Guest";
     }
-} 
+
+    public class LoginResult
+    {
+        public bool IsSuccess { get; set; }
+        public Member Member { get; set; }
+        public string Token { get; set; } // if you want JWT too
+    }
+
+}

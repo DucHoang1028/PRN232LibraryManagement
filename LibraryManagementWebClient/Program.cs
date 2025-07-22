@@ -17,6 +17,10 @@ namespace LibraryManagementWebClient
             {
                 client.BaseAddress = new Uri("http://localhost:5127/");
             });
+            builder.Services.AddHttpClient<IApiService, ApiService>(client =>
+            {
+                client.BaseAddress = new Uri("http://localhost:5127/");
+            });
 
             // Add authentication
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

@@ -9,6 +9,7 @@ namespace Services
 {
     public interface IAuthService
     {
-        Task<bool> RegisterUser(RegisterRequest user);
+        Task<(bool Succeeded, string? ErrorMessage)> RegisterUserAsync(RegisterRequest request);
+        Task<LoginResponse> LoginUserAsync(LoginRequest request);
     }
 }
