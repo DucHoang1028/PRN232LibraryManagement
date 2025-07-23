@@ -2,6 +2,7 @@ using LibraryManagementWebClient.Models;
 using LibraryManagementWebClient.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace LibraryManagementWebClient.Controllers
 {
@@ -106,6 +107,27 @@ namespace LibraryManagementWebClient.Controllers
                 if (book == null)
                 {
                     return NotFound();
+                }
+
+                // Get reviews for the book
+                var (reviews, averageRating, ratingCount) = await _apiService.GetBookReviewsAsync(id);
+                ViewBag.Reviews = reviews;
+                ViewBag.AverageRating = averageRating;
+                ViewBag.RatingCount = ratingCount;
+
+                // If user is logged in, get their review if it exists
+                if (User.Identity?.IsAuthenticated == true && User.IsInRole("Member"))
+                {
+                    var memberId = GetCurrentMemberId();
+                    var userReview = await _apiService.GetMemberBookReviewAsync(memberId, id);
+                    ViewBag.UserReview = userReview;
+                    
+                    // Check if the member has unreturned or overdue books
+                    ViewBag.HasUnreturnedBooks = await _apiService.HasUnreturnedBooksAsync(memberId);
+                    ViewBag.HasOverdueBooks = await _apiService.HasOverdueBooksAsync(memberId);
+                    
+                    // Check if user already has this specific book checked out
+                    ViewBag.HasThisBookCheckedOut = await _apiService.HasBookCheckedOutAsync(memberId, id);
                 }
 
                 return View(book);
@@ -216,12 +238,35 @@ namespace LibraryManagementWebClient.Controllers
                     return RedirectToAction("BookDetails", new { id = bookId });
                 }
 
-                // Get the current user's member ID (in real app, get from user claims)
+                // Get the current user's member ID
                 var memberId = GetCurrentMemberId();
                 if (memberId == Guid.Empty)
                 {
                     TempData["Error"] = "Member information not found. Please contact support.";
                     return RedirectToAction("BookDetails", new { id = bookId });
+                }
+
+                // Get the member by email to check for additional validation
+                var userEmail = User.FindFirstValue(ClaimTypes.Email);
+                if (!string.IsNullOrEmpty(userEmail))
+                {
+                    var member = await _apiService.GetMemberByEmailAsync(userEmail);
+                    if (member != null)
+                    {
+                        // Check if the user has overdue books
+                        if (await _apiService.HasOverdueBooksAsync(member.MemberId))
+                        {
+                            TempData["Error"] = "You have overdue books. Please return them before checking out new books.";
+                            return RedirectToAction("BookDetails", new { id = bookId });
+                        }
+                        
+                        // Check if the user already has this book checked out
+                        if (await _apiService.HasBookCheckedOutAsync(member.MemberId, bookId))
+                        {
+                            TempData["Error"] = "You already have this book checked out.";
+                            return RedirectToAction("BookDetails", new { id = bookId });
+                        }
+                    }
                 }
 
                 // Create loan using the API
@@ -230,25 +275,217 @@ namespace LibraryManagementWebClient.Controllers
                 TempData["Success"] = $"Book '{loan.Book?.Title}' has been checked out successfully! Return by {endDate:MMMM dd, yyyy}.";
                 return RedirectToAction("BookDetails", new { id = bookId });
             }
+            catch (HttpRequestException ex) when (ex.Message.Contains("400"))
+            {
+                // Extract the error message from the response if possible
+                string errorMessage = "Unable to check out book. ";
+                
+                // Try to extract a more detailed message from the inner exception
+                if (ex.InnerException != null && !string.IsNullOrEmpty(ex.InnerException.Message))
+                {
+                    var errorContent = ex.InnerException.Message;
+                    if (errorContent.Contains("Member is not eligible"))
+                        errorMessage = "You have reached the maximum number of books you can check out.";
+                    else if (errorContent.Contains("Book is not available"))
+                        errorMessage = "This book is no longer available for checkout.";
+                    else if (errorContent.Contains("already have this book"))
+                        errorMessage = "You already have this book checked out.";
+                    else if (errorContent.Contains("overdue books"))
+                        errorMessage = "You have overdue books. Please return them before checking out new books.";
+                    else
+                        errorMessage = "Error: " + errorContent;
+                }
+                
+                _logger.LogError(ex, errorMessage);
+                TempData["Error"] = errorMessage;
+                return RedirectToAction("BookDetails", new { id = bookId });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking out book");
-                TempData["Error"] = "Error checking out book. Please try again.";
+                
+                // Provide a more user-friendly message based on the error message
+                string errorMessage = "Error checking out book.";
+                
+                if (ex.Message.Contains("overdue"))
+                {
+                    errorMessage = "You have overdue books. Please return them before checking out new books.";
+                }
+                else if (ex.Message.Contains("not eligible"))
+                {
+                    errorMessage = "You are not eligible to check out more books at this time. You may have reached the maximum limit.";
+                }
+                else if (ex.Message.Contains("not available"))
+                {
+                    errorMessage = "This book is not available for checkout. It may be on loan or reserved.";
+                }
+                else if (ex.Message.Contains("already have this book"))
+                {
+                    errorMessage = "You already have this book checked out.";
+                }
+                else
+                {
+                    // Include part of the actual error for debugging
+                    errorMessage = $"Error checking out book: {ex.Message.Split('.').FirstOrDefault()}";
+                }
+                
+                TempData["Error"] = errorMessage;
                 return RedirectToAction("BookDetails", new { id = bookId });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddReview(Review review)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Please provide a valid rating";
+                return RedirectToAction("BookDetails", new { id = review.BookId });
+            }
+
+            try
+            {
+                // Try to get member ID if user is authenticated
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    var memberId = GetCurrentMemberId();
+                    review.MemberId = memberId;
+                    
+                    // Check if user already reviewed this book
+                    var existingReview = await _apiService.GetMemberBookReviewAsync(memberId, review.BookId);
+                    if (existingReview != null)
+                    {
+                        TempData["Error"] = "You have already reviewed this book.";
+                        return RedirectToAction("BookDetails", new { id = review.BookId });
+                    }
+                }
+
+                // Create the review
+                await _apiService.CreateReviewAsync(review);
+                TempData["Success"] = "Your review was submitted successfully!";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding review");
+                TempData["Error"] = "Error adding review. Please try again.";
+            }
+
+            return RedirectToAction("BookDetails", new { id = review.BookId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Member")]
+        public async Task<IActionResult> UpdateReview(Review review)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Invalid review data. Please try again.";
+                return RedirectToAction("BookDetails", new { id = review.BookId });
+            }
+
+            try
+            {
+                var memberId = GetCurrentMemberId();
+                
+                // Check if this review belongs to the current user
+                var existingReview = await _apiService.GetReviewAsync(review.ReviewId);
+                if (existingReview == null || existingReview.MemberId != memberId)
+                {
+                    TempData["Error"] = "You are not authorized to edit this review.";
+                    return RedirectToAction("BookDetails", new { id = review.BookId });
+                }
+
+                // Update only the rating and comment
+                existingReview.Rating = review.Rating;
+                existingReview.Comment = review.Comment;
+
+                await _apiService.UpdateReviewAsync(review.ReviewId, existingReview);
+                TempData["Success"] = "Your review was updated successfully!";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating review");
+                TempData["Error"] = "Error updating review. Please try again.";
+            }
+
+            return RedirectToAction("BookDetails", new { id = review.BookId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Member,Staff")]
+        public async Task<IActionResult> DeleteReview(Guid reviewId)
+        {
+            try
+            {
+                var review = await _apiService.GetReviewAsync(reviewId);
+                if (review == null)
+                {
+                    TempData["Error"] = "Review not found.";
+                    return RedirectToAction("Index");
+                }
+
+                var bookId = review.BookId;
+                var memberId = GetCurrentMemberId();
+                
+                // Only allow staff or the review owner to delete
+                if (!User.IsInRole("Staff") && review.MemberId != memberId)
+                {
+                    TempData["Error"] = "You are not authorized to delete this review.";
+                    return RedirectToAction("BookDetails", new { id = bookId });
+                }
+
+                await _apiService.DeleteReviewAsync(reviewId);
+                TempData["Success"] = "Review deleted successfully!";
+                return RedirectToAction("BookDetails", new { id = bookId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting review");
+                TempData["Error"] = "Error deleting review. Please try again.";
+                return RedirectToAction("Index");
             }
         }
 
         private Guid GetCurrentMemberId()
         {
-            // Get member ID from user claims
-            var memberIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (memberIdClaim != null && Guid.TryParse(memberIdClaim.Value, out Guid memberId))
+            try
             {
-                return memberId;
+                // Try various claim types that might contain the member ID
+                var memberIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                    ?? User.FindFirst("MemberId") 
+                    ?? User.FindFirst("Id");
+
+                if (memberIdClaim != null && Guid.TryParse(memberIdClaim.Value, out Guid memberId))
+                {
+                    return memberId;
+                }
+
+                // If we can't get it from claims, try to get it by email
+                var emailClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Email);
+                if (emailClaim != null)
+                {
+                    var member = _apiService.GetMemberByEmailAsync(emailClaim.Value).Result;
+                    if (member != null)
+                    {
+                        return member.MemberId;
+                    }
+                }
+                
+                // Log all claims for debugging
+                var claims = string.Join(", ", User.Claims.Select(c => $"{c.Type}={c.Value}"));
+                _logger.LogWarning($"Could not find member ID in claims: {claims}");
+                
+                // Fallback to default member ID if not found
+                return Guid.Parse("00000000-0000-0000-0000-000000000002");
             }
-            
-            // Fallback to default member ID if not found
-            return Guid.Parse("00000000-0000-0000-0000-000000000002");
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting current member ID");
+                return Guid.Parse("00000000-0000-0000-0000-000000000002"); // Default fallback
+            }
         }
     }
 } 

@@ -1,0 +1,100 @@
+@model LibraryManagementWebClient.Models.BlogPost
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Blog" asp-action="Index">Blog</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+                </ol>
+            </nav>
+            
+            <div class="card shadow-sm blog-post">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Title" style="max-height: 350px; object-fit: cover;">
+                }
+                
+                <div class="card-body">
+                    <h1 class="card-title">@Model.Title</h1>
+                    
+                    <div class="d-flex mb-3 text-muted">
+                        <div class="me-3"><i class="bi bi-person"></i> @Model.AuthorName</div>
+                        <div class="me-3"><i class="bi bi-calendar"></i> @Model.PublishedDate.ToString("MMMM dd, yyyy")</div>
+                        @if (Model.Status != "Published")
+                        {
+                            <div class="badge bg-warning text-dark">@Model.Status</div>
+                        }
+                    </div>
+                    
+                    <hr/>
+                    
+                    <div class="blog-content mt-4">
+                        @Html.Raw(System.Web.HttpUtility.HtmlDecode(Model.Content))
+                    </div>
+                    
+                    @if (Model.TagList.Any())
+                    {
+                        <div class="mt-4">
+                            <h5>Tags:</h5>
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var tag in Model.TagList)
+                                {
+                                    <a asp-action="Index" asp-route-tag="@tag" class="badge bg-secondary text-decoration-none">@tag</a>
+                                }
+                            </div>
+                        </div>
+                    }
+                    
+                    <div class="mt-4 pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-outline-primary"><i class="bi bi-arrow-left"></i> Back to Blog</a>
+                        
+                        @if (User.IsInRole("Staff"))
+                        {
+                            <div class="float-end">
+                                <a asp-action="Edit" asp-route-id="@Model.BlogPostId" class="btn btn-outline-primary me-2">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@Model.BlogPostId" class="btn btn-outline-danger">Delete</a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .blog-content {
+            line-height: 1.8;
+        }
+        
+        .blog-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .blog-content img {
+            max-width: 100%;
+            height: auto;
+            margin: 1.5rem 0;
+        }
+        
+        .blog-content h2, .blog-content h3 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .blog-content blockquote {
+            border-left: 4px solid #dee2e6;
+            padding-left: 1rem;
+            font-style: italic;
+            color: #6c757d;
+        }
+    </style>
+} 

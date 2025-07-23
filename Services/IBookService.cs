@@ -19,5 +19,6 @@ namespace Services
         List<Book> GetBooksByCategory(Guid categoryId);
         List<Book> GetBooksByPublisher(Guid publisherId);
         bool UpdateBookAvailability(Guid bookId, int changeInCopies);
+        bool HasActiveLoans(Guid bookId);
     }
 }

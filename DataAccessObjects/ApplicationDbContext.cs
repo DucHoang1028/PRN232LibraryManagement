@@ -24,6 +24,8 @@ namespace DataAccessObjects
         public DbSet<Loan> Loans { get; set; }
         public DbSet<Fine> Fines { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<BlogPost> BlogPosts { get; set; }
 
         private string GetConnectionString()
         {
@@ -117,6 +119,28 @@ namespace DataAccessObjects
                 .WithMany(m => m.Fines)
                 .HasForeignKey(f => f.MemberId)
                 .OnDelete(DeleteBehavior.Restrict);
+                
+            // Review relationships
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.Book)
+                .WithMany(b => b.Reviews)
+                .HasForeignKey(r => r.BookId);
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.Member)
+                .WithMany(m => m.Reviews)
+                .HasForeignKey(r => r.MemberId);
+                
+            // Only allow one review per book per member
+            modelBuilder.Entity<Review>()
+                .HasIndex(r => new { r.BookId, r.MemberId })
+                .IsUnique();
+                
+            // Configure BlogPost relationships
+            modelBuilder.Entity<BlogPost>()
+                .HasOne(b => b.Author)
+                .WithMany(m => m.BlogPosts)
+                .HasForeignKey(b => b.AuthorId);
         }
     }
 }

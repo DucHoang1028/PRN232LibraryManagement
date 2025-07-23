@@ -259,6 +259,62 @@ POST {{baseUrl}}/api/Loans/process-overdue
 
 ###
 
+### Blog API Endpoints
+
+### Get all blog posts (Staff sees all, others see only published)
+GET {{baseUrl}}/api/BlogPosts/list
+Accept: application/json
+
+### Get published blog posts
+GET {{baseUrl}}/api/BlogPosts/published
+Accept: application/json
+
+### Get blog post details
+GET {{baseUrl}}/api/BlogPosts/details/{{blogPostId}}
+Accept: application/json
+
+### Get blog posts by author
+GET {{baseUrl}}/api/BlogPosts/author/{{authorId}}
+Accept: application/json
+
+### Get blog posts by tag
+GET {{baseUrl}}/api/BlogPosts/tag/{{tag}}
+Accept: application/json
+
+### Create a new blog post
+POST {{baseUrl}}/api/BlogPosts/create
+Content-Type: application/json
+
+{
+  "title": "Welcome to Our Library Blog",
+  "content": "<p>Welcome to our new library blog! This is the first post in our series.</p><p>Here at the library, we're excited to share news about new books, upcoming events, and helpful reading tips. Stay tuned for more content!</p><h3>What to Expect</h3><ul><li>Book recommendations</li><li>Author interviews</li><li>Event announcements</li><li>Reading challenges</li></ul>",
+  "summary": "Welcome to our new blog where we'll share library news, book recommendations, and more!",
+  "imageUrl": "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1000",
+  "tags": "welcome, news, introduction",
+  "status": "Published"
+}
+
+### Update an existing blog post (Staff only)
+PUT {{baseUrl}}/api/BlogPosts/update/{{blogPostId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "blogPostId": "{{blogPostId}}",
+  "title": "Updated Blog Post Title",
+  "content": "<p>This is the updated content of the blog post.</p>",
+  "summary": "Updated summary",
+  "imageUrl": "https://example.com/updated-image.jpg",
+  "tags": "updated, tags",
+  "status": "Published"
+}
+
+### Delete a blog post (Staff only)
+DELETE {{baseUrl}}/api/BlogPosts/delete/{{blogPostId}}
+Authorization: Bearer {{token}}
+
+###
+
 ### Variables (set these in your environment or replace with actual values)
 @baseUrl = https://localhost:7001
 @bookId = 00000000-0000-0000-0000-000000000001

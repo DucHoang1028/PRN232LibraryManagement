@@ -1,0 +1,62 @@
+@model LibraryManagementWebClient.Models.BlogPost
+
+@{
+    ViewData["Title"] = "Delete Blog Post";
+}
+
+<div class="container mt-4">
+    <h1>Delete Blog Post</h1>
+    
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Blog" asp-action="Manage">Blog Management</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Delete Post</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-danger mb-4">Are you sure you want to delete this blog post?</h3>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill"></i> This action cannot be undone.
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4>@Model.Title</h4>
+                        <div class="text-muted mb-2">
+                            <span><i class="bi bi-person"></i> @Model.AuthorName</span> | 
+                            <span><i class="bi bi-calendar"></i> Created: @Model.CreatedDate.ToString("MMM dd, yyyy")</span> | 
+                            <span>Status: <span class="badge @(Model.Status == "Published" ? "bg-success" : "bg-warning text-dark")">@Model.Status</span></span>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(Model.Summary))
+                        {
+                            <div class="card bg-light p-3 mb-3">
+                                @Model.Summary
+                            </div>
+                        }
+                        
+                        @if (Model.TagList.Any())
+                        {
+                            <div class="mb-3">
+                                <strong>Tags:</strong> 
+                                @string.Join(", ", Model.TagList)
+                            </div>
+                        }
+                    </div>
+                    
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="BlogPostId" />
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Manage" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

@@ -17,6 +17,8 @@ namespace Services
         bool DeleteLoan(Guid loanId);
         bool IsBookAvailable(Guid bookId);
         bool IsMemberEligibleForCheckout(Guid memberId);
+        bool HasOverdueBooks(Guid memberId);
+        bool HasUnreturnedBooks(Guid memberId);
         DateTime CalculateDueDate();
         void ProcessOverdueLoans();
         List<Loan> GetLoansDueToday();
