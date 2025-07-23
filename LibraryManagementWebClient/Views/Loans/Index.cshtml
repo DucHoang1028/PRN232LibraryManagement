@@ -3,6 +3,25 @@
     ViewData["Title"] = "Loans";
 }
 
+@{
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+    else if (User.IsInRole("Staff"))
+    {
+        Layout = "~/Views/Shared/_StaffLayout.cshtml";
+    }
+    else if (User.IsInRole("Member"))
+    {
+        Layout = "~/Views/Shared/_MemberLayout.cshtml";
+    }
+    else
+    {
+        Layout = null; // or a default layout
+    }
+}
+
 <div class="row mb-4">
     <div class="col-md-8">
         <h1 class="display-5 text-primary">

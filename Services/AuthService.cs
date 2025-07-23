@@ -21,17 +21,20 @@ namespace Services
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IMemberService _memberService;
 
         public AuthService(
         UserManager<IdentityUser> userManager,
         RoleManager<IdentityRole> roleManager,
         ApplicationDbContext dbContext,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IMemberService memberService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _context = dbContext;
             _configuration = configuration;
+            _memberService = memberService;
         }
 
         public async Task<(bool Succeeded, string? ErrorMessage)> RegisterUserAsync(RegisterRequest request)
@@ -72,9 +75,7 @@ namespace Services
                 CreatedDate = DateTime.UtcNow
             };
 
-            _context.Members.Add(member);
-            await _context.SaveChangesAsync();
-
+            _memberService.CreateMember(member);
             return (true, null);
         }
 

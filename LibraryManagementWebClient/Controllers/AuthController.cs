@@ -28,7 +28,7 @@ namespace LibraryManagementWebClient.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
+        public async Task<IActionResult> Login(ViewModels.LoginViewModel model, string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
 
@@ -44,6 +44,8 @@ namespace LibraryManagementWebClient.Controllers
                     ModelState.AddModelError(string.Empty, "Invalid email or password.");
                     return View(model);
                 }
+
+                HttpContext.Session.SetString("JWToken", loginResult.Token);
 
                 var member = loginResult.Member;
 
@@ -83,7 +85,7 @@ namespace LibraryManagementWebClient.Controllers
 
                 return member.Role switch
                 {
-                    "Admin" => RedirectToAction("Index", "Home"),
+                    "Admin" => RedirectToAction("Index", "Admin"),
                     "Staff" => RedirectToAction("Index", "Dashboard"),
                     "Member" => RedirectToAction("Index", "Home"),
                     "Guest" => RedirectToAction("Guest", "AccessDenied"),
@@ -146,19 +148,6 @@ namespace LibraryManagementWebClient.Controllers
 
 namespace LibraryManagementWebClient.Models
 {
-    public class LoginViewModel
-    {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = string.Empty;
-
-        [Required]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = string.Empty;
-
-        [Display(Name = "Remember me?")]
-        public bool RememberMe { get; set; }
-    }
 
     public class RegisterViewModel
     {

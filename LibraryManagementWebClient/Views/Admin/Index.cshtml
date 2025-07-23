@@ -1,0 +1,241 @@
+﻿@model LibraryManagementWebClient.ViewModels.UserManagementViewModel
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var activeRole = Model.SelectedRoleFilter?.ToLower() ?? "member";
+}
+
+<style>
+    .dropdown-menu {
+        position: absolute !important;
+        transform: translate3d(0px, 38px, 0px) !important;
+        top: 0 !important;
+        left: 0 !important;
+        will-change: transform;
+    }
+
+    .table-responsive {
+        overflow: visible !important;
+    }
+
+</style>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2>User Management</h2>
+            <p class="text-muted">Manage members and staff accounts</p>
+        </div>
+        <a class="btn btn-primary" asp-action="Create">
+            <i class="bi bi-plus-circle"></i> Create User
+        </a>
+    </div>
+
+    <div class="mb-3 d-flex justify-content-between align-items-center">
+        <div class="btn-group" role="group">
+            <button class="btn btn-outline-primary @(activeRole == "member" ? "active" : "")"
+                    data-role="member"
+                    onclick="filterRole('member')">
+                Members <span class="badge bg-primary">@Model.MemberCount</span>
+            </button>
+
+            <button class="btn btn-outline-secondary @(activeRole == "Staff" ? "active" : "")"
+                    data-role="staff"
+                    onclick="filterRole('staff')">
+                Staff <span class="badge bg-secondary">@Model.StaffCount</span>
+            </button>
+
+        </div>
+
+        <div class="d-flex gap-2 align-items-center">
+            <select class="form-select" style="width: 180px;" id="sortSelect">
+                <option value="recent" selected>Recently Added</option>
+                <option value="name">Name (A-Z)</option>
+                <option value="joinDateAsc">Join Date ↑</option>
+                <option value="joinDateDesc">Join Date ↓</option>
+                <option value="loans">Most Loans</option>
+                <option value="fines">Most Fines</option>
+            </select>
+
+
+            <div class="form-check me-2">
+                <input class="form-check-input" type="checkbox" id="filterBanned">
+                <label class="form-check-label" for="filterBanned">Banned</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Role</th>
+                    <th>Joined</th>
+                    <th class="role-member-only">Loans</th>
+                    <th class="role-member-only">Fines</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                @foreach (var user in Model.Users)
+                {
+                    var roleLower = user.Role.ToLower();
+                    var banned = user.IsBanned ? "true" : "false";
+
+                    <tr class="user-row"
+                        data-role="@roleLower"
+                        data-banned="@banned">
+                        <td>@user.FullName</td>
+                        <td>@user.Email</td>
+                        <td>@user.Phone</td>
+                        <td>
+                            <span class="badge @(roleLower == "member" ? "bg-primary" : "bg-secondary")">
+                                @user.Role
+                            </span>
+                        </td>
+                        <td>@user.JoinDate.ToString("yyyy-MM-dd")</td>
+                        <td class="role-member-only">@(user.TotalLoans ?? 0)</td>
+                        <td class="role-member-only">@(user.TotalFines?.ToString("C") ?? "$0.00")</td>
+                        <td>
+                            @if (user.IsBanned)
+                            {
+                                <span class="text-danger">Banned</span>
+                            }
+                            else
+                            {
+                                <span class="text-success">Active</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Members" asp-action="Details"asp-route-id="@user.Id">View</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Members" asp-action="Edit" asp-route-id="@user.Id">Edit</a></li>
+                                    @if (user.IsBanned)
+                                    {
+                                        <li><a class="dropdown-item text-success" asp-action="Unban" asp-route-id="@user.Id">Unban</a></li>
+                                    }
+                                    else
+                                    {
+                                        <li style="margin-left: 15px;">
+                                            <form asp-action="Ban" asp-route-id="@user.Id" method="post" style="display:inline;">
+                                                <button type="submit" class="dropdown-item text-danger p-0 m-0 border-0 bg-transparent" style="font-weight: normal;">
+                                                    Ban
+                                                </button>
+                                            </form>
+                                        </li>
+
+                                    }
+                                    <li><a class="dropdown-item text-warning" asp-action="ResetPassword" asp-route-id="@user.Id">Reset Password</a></li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr id="noResultsRow" style="display:none;">
+                        <td colspan="9" class="text-center text-muted">No one is banned.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function filterRole(role) {
+            const showBannedOnly = document.getElementById('filterBanned').checked;
+            let anyVisible = false;
+
+            document.querySelectorAll('.user-row').forEach(row => {
+                const matchesRole = row.dataset.role === role;
+                const isBanned = row.dataset.banned === 'true';
+
+                const shouldShow = matchesRole && (!showBannedOnly || isBanned);
+                row.style.display = shouldShow ? '' : 'none';
+
+                if (shouldShow) anyVisible = true;
+            });
+
+            document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+            const targetBtn = document.querySelector(`.btn-group .btn[data-role="${role}"]`);
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+            }
+
+            document.getElementById('noResultsRow').style.display = anyVisible ? 'none' : '';
+            toggleColumnVisibility(role);
+        }
+
+        function sortTableBy(value) {
+            const tbody = document.getElementById('userTableBody');
+            const rows = Array.from(tbody.querySelectorAll('tr.user-row'));
+
+            let getValue;
+
+            switch (value) {
+                case 'loans':
+                    getValue = row => parseInt(row.children[5]?.textContent.trim()) || 0;
+                    break;
+                case 'fines':
+                    getValue = row => parseFloat(row.children[6]?.textContent.replace(/[^0-9.-]+/g, '')) || 0;
+                    break;
+                case 'name':
+                    getValue = row => row.children[0]?.textContent.trim().toLowerCase();
+                    break;
+                case 'joinDateAsc':
+                    getValue = row => new Date(row.children[4]?.textContent.trim());
+                    rows.sort((a, b) => getValue(a) - getValue(b));
+                    break;
+                case 'joinDateDesc':
+                case 'recent':
+                    getValue = row => new Date(row.children[4]?.textContent.trim());
+                    rows.sort((a, b) => getValue(b) - getValue(a));
+                    break;
+                default:
+                    return;
+            }
+
+            if (value === 'loans' || value === 'fines' || value === 'name') {
+                rows.sort((a, b) => {
+                    const valA = getValue(a);
+                    const valB = getValue(b);
+                    return typeof valA === "string"
+                        ? valA.localeCompare(valB)
+                        : valB - valA;
+                });
+            }
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // Initial filter and sort
+        filterRole('@activeRole');
+        sortTableBy('recent');
+
+        // Event listeners
+        document.getElementById('sortSelect').addEventListener('change', function () {
+            sortTableBy(this.value);
+        });
+
+        document.getElementById('filterBanned').addEventListener('change', function () {
+            const activeRole = document.querySelector('.btn-group .btn.active')?.dataset.role ?? 'member';
+            filterRole(activeRole);
+        });
+                function toggleColumnVisibility(role) {
+            const isMember = role === 'member';
+            document.querySelectorAll('.role-member-only').forEach(col => {
+                col.style.display = isMember ? '' : 'none';
+            });
+        }
+
+    </script>
+}
+
+
+

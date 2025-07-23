@@ -1,4 +1,4 @@
-using BusinessObjects;
+﻿using BusinessObjects;
 using Repositories;
 
 namespace Services
@@ -58,13 +58,17 @@ namespace Services
             if (string.IsNullOrEmpty(member.Email))
                 throw new ArgumentException("Email is required");
 
-            // Check if email already exists for another member
             var memberWithEmail = _memberRepository.GetMemberByEmail(member.Email);
             if (memberWithEmail != null && memberWithEmail.MemberId != memberId)
                 throw new InvalidOperationException("Email already exists");
+            existingMember.FirstName = member.FirstName;
+            existingMember.LastName = member.LastName;
+            existingMember.Email = member.Email;
+            existingMember.IsActive = member.IsActive;
 
-            return _memberRepository.UpdateMember(memberId, member);
+            return _memberRepository.UpdateMember(memberId, existingMember);
         }
+
 
         public bool DeleteMember(Guid memberId)
         {

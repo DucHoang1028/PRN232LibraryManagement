@@ -41,6 +41,9 @@ namespace LibraryManagementWebClient
                 options.AddPolicy("GuestOrHigher", policy => policy.RequireRole("Guest", "Member", "Staff"));
             });
 
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddSession();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -54,6 +57,7 @@ namespace LibraryManagementWebClient
 
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseSession();
 
             app.MapControllerRoute(
                 name: "default",

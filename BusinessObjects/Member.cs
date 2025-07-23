@@ -25,6 +25,4 @@ namespace BusinessObjects
         public List<Reservation> Reservations { get; set; } = new();
         public List<Fine> Fines { get; set; } = new();
     }
-
-    //Note: co 3 role guest, staff, admin
 }
