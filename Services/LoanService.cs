@@ -40,6 +40,15 @@ namespace Services
             if (!IsMemberEligibleForCheckout(memberId))
                 throw new InvalidOperationException("Member is not eligible for checkout");
 
+            // Validate member doesn't have overdue books
+            if (HasOverdueBooks(memberId))
+                throw new InvalidOperationException("You have overdue books. Please return them before checking out new books.");
+                
+            // Check if member already has this book checked out
+            var memberLoans = _loanRepository.GetLoansByMember(memberId);
+            if (memberLoans.Any(l => l.BookId == bookId && l.Status == "Active"))
+                throw new InvalidOperationException("You already have this book checked out.");
+
             // Create loan
             var loan = new Loan
             {
@@ -143,8 +152,33 @@ namespace Services
             if (member == null || !member.IsActive)
                 return false;
 
+            // Check active loan count (maximum 5 books per member)
             var activeLoanCount = _memberRepository.GetActiveLoanCount(memberId);
-            return activeLoanCount < 5; // Maximum 5 books per member
+            if (activeLoanCount >= 5)
+                return false;
+
+            // Check for overdue books
+            if (HasOverdueBooks(memberId))
+                return false;
+
+            return true;
+        }
+
+        public bool HasOverdueBooks(Guid memberId)
+        {
+            var loans = _loanRepository.GetLoansByMember(memberId);
+            
+            // Check for any active loans that are past their due date
+            return loans.Any(loan => 
+                loan.Status == "Active" && 
+                loan.DueDate < DateTime.Today);
+        }
+
+        public bool HasUnreturnedBooks(Guid memberId)
+        {
+            // Check if member has any active loans
+            var activeLoanCount = _memberRepository.GetActiveLoanCount(memberId);
+            return activeLoanCount > 0;
         }
 
         public DateTime CalculateDueDate()

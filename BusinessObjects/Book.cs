@@ -27,5 +27,6 @@ namespace BusinessObjects
         public List<BookCategory> BookCategories { get; set; } = new();
         public List<Loan> Loans { get; set; } = new();
         public List<Reservation> Reservations { get; set; } = new();
+        public List<Review> Reviews { get; set; } = new();
     }
 }

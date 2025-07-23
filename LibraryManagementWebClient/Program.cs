@@ -1,5 +1,6 @@
 using LibraryManagementWebClient.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Net.Http.Headers;
 
 namespace LibraryManagementWebClient
 {
@@ -16,6 +17,7 @@ namespace LibraryManagementWebClient
             builder.Services.AddHttpClient<ILibraryApiService, LibraryApiService>(client =>
             {
                 client.BaseAddress = new Uri("http://localhost:5127/");
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             });
 
             // Add authentication

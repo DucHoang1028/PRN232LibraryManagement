@@ -259,6 +259,49 @@ namespace LibraryManagementAPI.Controllers
             }
         }
 
+        [HttpGet("member/{memberId}/hasoverduebooks")]
+        public async Task<ActionResult<bool>> HasOverdueBooks(Guid memberId)
+        {
+            try
+            {
+                var hasOverdue = _loanService.HasOverdueBooks(memberId);
+                return Ok(hasOverdue);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("member/{memberId}/hasunreturnedbooks")]
+        public async Task<ActionResult<bool>> HasUnreturnedBooks(Guid memberId)
+        {
+            try
+            {
+                var hasUnreturned = _loanService.HasUnreturnedBooks(memberId);
+                return Ok(hasUnreturned);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("member/{memberId}/hasbook/{bookId}")]
+        public async Task<ActionResult<bool>> HasBookCheckedOut(Guid memberId, Guid bookId)
+        {
+            try
+            {
+                var memberLoans = _loanService.GetLoansByMember(memberId);
+                var hasBook = memberLoans.Any(l => l.BookId == bookId && l.Status == "Active");
+                return Ok(hasBook);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
         // POST: api/Loans/process-overdue
         [HttpPost("process-overdue")]
         public async Task<IActionResult> ProcessOverdueLoans()

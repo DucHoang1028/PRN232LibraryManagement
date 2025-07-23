@@ -1,0 +1,95 @@
+@model List<LibraryManagementWebClient.Models.BlogPost>
+
+@{
+    ViewData["Title"] = "Manage Blog Posts";
+}
+
+<div class="container mt-4">
+    <h1>Manage Blog Posts</h1>
+    
+    <p>
+        <a asp-action="Create" class="btn btn-success mb-3">Create New Post</a>
+        <a asp-action="Index" class="btn btn-outline-primary mb-3">View Public Blog</a>
+    </p>
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Author</th>
+                            <th>Created</th>
+                            <th>Published</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Any())
+                        {
+                            @foreach (var post in Model)
+                            {
+                                <tr>
+                                    <td>@post.Title</td>
+                                    <td>
+                                        @if (post.Status == "Published")
+                                        {
+                                            <span class="badge bg-success">Published</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">Draft</span>
+                                        }
+                                    </td>
+                                    <td>@post.AuthorName</td>
+                                    <td>@post.CreatedDate.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        @if (post.Status == "Published")
+                                        {
+                                            @post.PublishedDate.ToString("MMM dd, yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Details" asp-route-id="@post.BlogPostId" class="btn btn-sm btn-outline-primary">View</a>
+                                            <a asp-action="Edit" asp-route-id="@post.BlogPostId" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                            <a asp-action="Delete" asp-route-id="@post.BlogPostId" class="btn btn-sm btn-outline-danger">Delete</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center">No blog posts found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div> 

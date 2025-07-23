@@ -112,6 +112,20 @@ namespace LibraryManagementAPI.Controllers
             }
         }
 
+        [HttpGet("{id}/hasactiveloans")]
+        public async Task<ActionResult<bool>> HasActiveLoans(Guid id)
+        {
+            try
+            {
+                var hasLoans = _bookService.HasActiveLoans(id);
+                return Ok(hasLoans);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
         [HttpPost("create")]
         public async Task<ActionResult<Book>> CreateBook([FromBody] Book book)
         {
@@ -142,6 +156,10 @@ namespace LibraryManagementAPI.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message, hasActiveLoans = true });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
@@ -161,7 +179,7 @@ namespace LibraryManagementAPI.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = ex.Message, hasActiveLoans = true });
             }
             catch (Exception ex)
             {

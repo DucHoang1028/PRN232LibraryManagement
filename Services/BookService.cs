@@ -50,6 +50,10 @@ namespace Services
             if (existingBook == null)
                 throw new ArgumentException("Book not found");
 
+            // Check if book has active loans
+            if (HasActiveLoans(bookId))
+                throw new InvalidOperationException("Cannot modify book details while it has active loans");
+
             // Validate book data
             if (string.IsNullOrEmpty(book.Title))
                 throw new ArgumentException("Book title is required");
@@ -73,7 +77,7 @@ namespace Services
                 return false;
 
             // Check if book has active loans
-            if (book.Loans.Any(l => l.Status == "Active"))
+            if (HasActiveLoans(bookId))
                 throw new InvalidOperationException("Cannot delete book with active loans");
 
             return _bookRepository.DeleteBook(bookId);
@@ -92,6 +96,15 @@ namespace Services
                 return false;
 
             return _bookRepository.UpdateBookAvailability(bookId, changeInCopies);
+        }
+        
+        public bool HasActiveLoans(Guid bookId)
+        {
+            var book = _bookRepository.GetBookById(bookId);
+            if (book == null)
+                return false;
+                
+            return book.Loans != null && book.Loans.Any(l => l.Status == "Active");
         }
     }
 }

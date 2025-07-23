@@ -45,6 +45,11 @@ namespace LibraryManagementWebClient.Controllers
                 {
                     return NotFound();
                 }
+
+                // Check if book has active loans
+                bool hasActiveLoans = await _apiService.HasActiveLoansAsync(id);
+                ViewBag.HasActiveLoans = hasActiveLoans;
+                
                 return View(book);
             }
             catch (Exception ex)
@@ -101,6 +106,14 @@ namespace LibraryManagementWebClient.Controllers
                 {
                     return NotFound();
                 }
+                
+                // Check if book has active loans
+                bool hasActiveLoans = await _apiService.HasActiveLoansAsync(id);
+                if (hasActiveLoans)
+                {
+                    TempData["Error"] = "Cannot edit this book because it currently has active loans.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
 
                 var publishers = await _apiService.GetPublishersAsync();
                 ViewBag.Publishers = publishers;
@@ -119,6 +132,14 @@ namespace LibraryManagementWebClient.Controllers
         {
             try
             {
+                // Double-check if book has active loans before proceeding
+                bool hasActiveLoans = await _apiService.HasActiveLoansAsync(id);
+                if (hasActiveLoans)
+                {
+                    TempData["Error"] = "Cannot edit this book because it currently has active loans.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+                
                 if (ModelState.IsValid)
                 {
                     await _apiService.UpdateBookAsync(id, book);
@@ -128,6 +149,13 @@ namespace LibraryManagementWebClient.Controllers
             }
             catch (Exception ex)
             {
+                // Check if error is related to active loans
+                if (ex.Message.Contains("active loans"))
+                {
+                    TempData["Error"] = "Cannot edit this book because it currently has active loans.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+                
                 ModelState.AddModelError("", $"Error updating book: {ex.Message}");
             }
 
@@ -145,6 +173,15 @@ namespace LibraryManagementWebClient.Controllers
                 {
                     return NotFound();
                 }
+                
+                // Check if book has active loans
+                bool hasActiveLoans = await _apiService.HasActiveLoansAsync(id);
+                if (hasActiveLoans)
+                {
+                    TempData["Error"] = "Cannot delete this book because it currently has active loans.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+                
                 return View(book);
             }
             catch (Exception ex)
@@ -160,6 +197,14 @@ namespace LibraryManagementWebClient.Controllers
         {
             try
             {
+                // Double-check if book has active loans before proceeding
+                bool hasActiveLoans = await _apiService.HasActiveLoansAsync(id);
+                if (hasActiveLoans)
+                {
+                    TempData["Error"] = "Cannot delete this book because it currently has active loans.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+                
                 var success = await _apiService.DeleteBookAsync(id);
                 if (success)
                 {
@@ -172,6 +217,13 @@ namespace LibraryManagementWebClient.Controllers
             }
             catch (Exception ex)
             {
+                // Check if error is related to active loans
+                if (ex.Message.Contains("active loans"))
+                {
+                    TempData["Error"] = "Cannot delete this book because it currently has active loans.";
+                    return RedirectToAction(nameof(Details), new { id = id });
+                }
+                
                 TempData["Error"] = $"Error deleting book: {ex.Message}";
             }
 

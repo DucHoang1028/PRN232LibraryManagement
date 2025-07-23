@@ -84,6 +84,22 @@ namespace LibraryManagementWebClient.Services
             return JsonSerializer.Deserialize<List<Book>>(content, _jsonOptions) ?? new List<Book>();
         }
 
+        public async Task<bool> HasActiveLoansAsync(Guid bookId)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"api/Books/{bookId}/hasactiveloans");
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<bool>(content, _jsonOptions);
+            }
+            catch
+            {
+                // If there's an error, assume there are no active loans
+                return false;
+            }
+        }
+
         // Publishers
         public async Task<List<Publisher>> GetPublishersAsync()
         {
@@ -179,7 +195,7 @@ namespace LibraryManagementWebClient.Services
 
         public async Task<bool> CanMemberCheckoutAsync(Guid memberId)
         {
-            var response = await _httpClient.GetAsync($"api/Members/cancheckout/{memberId}");
+            var response = await _httpClient.GetAsync($"api/Loans/membereligible/{memberId}");
             response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<bool>(content, _jsonOptions);
@@ -187,10 +203,32 @@ namespace LibraryManagementWebClient.Services
 
         public async Task<int> GetMemberActiveLoanCountAsync(Guid memberId)
         {
-            var response = await _httpClient.GetAsync($"api/Members/activeloancount/{memberId}");
+            var loans = await GetMemberLoansAsync(memberId);
+            return loans.Count(l => l.Status == "Active");
+        }
+
+        public async Task<bool> HasOverdueBooksAsync(Guid memberId)
+        {
+            var response = await _httpClient.GetAsync($"api/Loans/member/{memberId}/hasoverduebooks");
             response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<int>(content, _jsonOptions);
+            return JsonSerializer.Deserialize<bool>(content, _jsonOptions);
+        }
+
+        public async Task<bool> HasUnreturnedBooksAsync(Guid memberId)
+        {
+            var response = await _httpClient.GetAsync($"api/Loans/member/{memberId}/hasunreturnedbooks");
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<bool>(content, _jsonOptions);
+        }
+
+        public async Task<bool> HasBookCheckedOutAsync(Guid memberId, Guid bookId)
+        {
+            var response = await _httpClient.GetAsync($"api/Loans/member/{memberId}/hasbook/{bookId}");
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<bool>(content, _jsonOptions);
         }
 
         public async Task<Member> CreateMemberAsync(Member member)
@@ -257,13 +295,56 @@ namespace LibraryManagementWebClient.Services
 
         public async Task<Loan> CheckoutBookAsync(Guid bookId, Guid memberId)
         {
-            var checkoutRequest = new { BookId = bookId, MemberId = memberId };
-            var json = JsonSerializer.Serialize(checkoutRequest, _jsonOptions);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("api/Loans/checkout", content);
-            response.EnsureSuccessStatusCode();
-            var responseContent = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<Loan>(responseContent, _jsonOptions) ?? new Loan();
+            try
+            {
+                var checkoutRequest = new { BookId = bookId, MemberId = memberId };
+                var json = JsonSerializer.Serialize(checkoutRequest, _jsonOptions);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync("api/Loans/checkout", content);
+
+                // If the API returns an error status code, extract the error message and throw a more informative exception
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+
+                    // Try to extract error message from JSON response
+                    try
+                    {
+                        var errorObj = JsonSerializer.Deserialize<ErrorResponse>(errorContent, _jsonOptions);
+                        if (!string.IsNullOrEmpty(errorObj?.Message))
+                        {
+                            throw new InvalidOperationException(errorObj.Message);
+                        }
+                    }
+                    catch (JsonException)
+                    {
+                        // If we can't parse the JSON, just use the raw content
+                    }
+
+                    // If we couldn't parse a specific message, throw a generic one with the status code
+                    throw new HttpRequestException(
+                        $"Failed to check out book. Status: {(int)response.StatusCode} {response.StatusCode}",
+                        null,
+                        response.StatusCode);
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<Loan>(responseContent, _jsonOptions) ?? new Loan();
+            }
+            catch (HttpRequestException ex)
+            {
+                // Let these propagate up with their status code
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Let these propagate up with the API error message
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error checking out book: {ex.Message}", ex);
+            }
         }
 
         public async Task<bool> ReturnBookAsync(Guid id)
@@ -293,5 +374,159 @@ namespace LibraryManagementWebClient.Services
             var response = await _httpClient.DeleteAsync($"api/Loans/delete/{id}");
             return response.IsSuccessStatusCode;
         }
+
+        // Reviews
+        public async Task<(List<Review> Reviews, double AverageRating, int RatingCount)> GetBookReviewsAsync(Guid bookId)
+        {
+            var response = await _httpClient.GetAsync($"api/Reviews/list/book/{bookId}");
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+
+            var result = JsonSerializer.Deserialize<ReviewsResponseModel>(content, _jsonOptions);
+            return (result?.Reviews ?? new List<Review>(), result?.AverageRating ?? 0, result?.RatingCount ?? 0);
+        }
+
+        public async Task<Review?> GetReviewAsync(Guid reviewId)
+        {
+            var response = await _httpClient.GetAsync($"api/Reviews/details/{reviewId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<Review>(content, _jsonOptions);
+            }
+            return null;
+        }
+
+        public async Task<Review?> GetMemberBookReviewAsync(Guid memberId, Guid bookId)
+        {
+            var response = await _httpClient.GetAsync($"api/Reviews/findBy/member/{memberId}/book/{bookId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<Review>(content, _jsonOptions);
+            }
+            return null;
+        }
+
+        public async Task<Review> CreateReviewAsync(Review review)
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(review, _jsonOptions);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync("api/Reviews/create", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Failed to create review. Status: {response.StatusCode}, Error: {errorContent}");
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<Review>(responseContent, _jsonOptions) ?? review;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error creating review: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<Review> UpdateReviewAsync(Guid reviewId, Review review)
+        {
+            var json = JsonSerializer.Serialize(review, _jsonOptions);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PutAsync($"api/Reviews/update/{reviewId}", content);
+            response.EnsureSuccessStatusCode();
+            var responseContent = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<Review>(responseContent, _jsonOptions) ?? review;
+        }
+
+        public async Task<bool> DeleteReviewAsync(Guid reviewId)
+        {
+            var response = await _httpClient.DeleteAsync($"api/Reviews/delete/{reviewId}");
+            return response.IsSuccessStatusCode;
+        }
+
+        // Blog Posts
+        public async Task<List<BlogPost>> GetAllBlogPostsAsync()
+        {
+            var response = await _httpClient.GetAsync("api/BlogPosts/list");
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<List<BlogPost>>(content, _jsonOptions) ?? new List<BlogPost>();
+        }
+        
+        public async Task<List<BlogPost>> GetPublishedBlogPostsAsync()
+        {
+            var response = await _httpClient.GetAsync("api/BlogPosts/published");
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<List<BlogPost>>(content, _jsonOptions) ?? new List<BlogPost>();
+        }
+        
+        public async Task<BlogPost?> GetBlogPostByIdAsync(Guid blogPostId)
+        {
+            var response = await _httpClient.GetAsync($"api/BlogPosts/details/{blogPostId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<BlogPost>(content, _jsonOptions);
+            }
+            return null;
+        }
+        
+        public async Task<List<BlogPost>> GetBlogPostsByAuthorAsync(Guid authorId)
+        {
+            var response = await _httpClient.GetAsync($"api/BlogPosts/author/{authorId}");
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<List<BlogPost>>(content, _jsonOptions) ?? new List<BlogPost>();
+        }
+        
+        public async Task<List<BlogPost>> GetBlogPostsByTagAsync(string tag)
+        {
+            var response = await _httpClient.GetAsync($"api/BlogPosts/tag/{Uri.EscapeDataString(tag)}");
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<List<BlogPost>>(content, _jsonOptions) ?? new List<BlogPost>();
+        }
+        
+        public async Task<BlogPost> CreateBlogPostAsync(BlogPost blogPost)
+        {
+            var json = JsonSerializer.Serialize(blogPost, _jsonOptions);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync("api/BlogPosts/create", content);
+            response.EnsureSuccessStatusCode();
+            var responseContent = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<BlogPost>(responseContent, _jsonOptions) ?? blogPost;
+        }
+        
+        public async Task<BlogPost> UpdateBlogPostAsync(Guid blogPostId, BlogPost blogPost)
+        {
+            var json = JsonSerializer.Serialize(blogPost, _jsonOptions);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PutAsync($"api/BlogPosts/update/{blogPostId}", content);
+            response.EnsureSuccessStatusCode();
+            var responseContent = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<BlogPost>(responseContent, _jsonOptions) ?? blogPost;
+        }
+        
+        public async Task<bool> DeleteBlogPostAsync(Guid blogPostId)
+        {
+            var response = await _httpClient.DeleteAsync($"api/BlogPosts/delete/{blogPostId}");
+            return response.IsSuccessStatusCode;
+        }
+
+        internal class ReviewsResponseModel
+        {
+            public List<Review> Reviews { get; set; } = new();
+            public double AverageRating { get; set; }
+            public int RatingCount { get; set; }
+        }
+
+        internal class ErrorResponse
+        {
+            public string? Message { get; set; }
+        }
     }
-} 
+}

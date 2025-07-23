@@ -31,10 +31,23 @@ namespace LibraryManagementAPI
                 options.Password.RequireNonAlphanumeric = true; // Must contain special characters (e.g. @, #)
             }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
+            // Add CORS policy
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowWebClient", builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
+            });
+
             // Register repositories
             builder.Services.AddScoped<IBookRepository, BookRepository>();
             builder.Services.AddScoped<IMemberRepository, MemberRepository>();
             builder.Services.AddScoped<ILoanRepository, LoanRepository>();
+            builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+            builder.Services.AddScoped<IBlogRepository, BlogRepository>();
 
             // Register services
             builder.Services.AddScoped<IAuthService, AuthService>();
@@ -43,6 +56,8 @@ namespace LibraryManagementAPI
             builder.Services.AddScoped<ILoanService, LoanService>();
             builder.Services.AddScoped<IPublisherService, PublisherService>();
             builder.Services.AddScoped<IFineService, FineService>();
+            builder.Services.AddScoped<IReviewService, ReviewService>();
+            builder.Services.AddScoped<IBlogService, BlogService>();
 
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
@@ -60,6 +75,9 @@ namespace LibraryManagementAPI
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            // Use CORS before other middleware
+            app.UseCors("AllowWebClient");
 
             app.UseAuthorization();
 
