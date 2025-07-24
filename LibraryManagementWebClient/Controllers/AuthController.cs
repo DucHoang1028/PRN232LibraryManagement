@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.ComponentModel.DataAnnotations;
 using LibraryManagementWebClient.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace LibraryManagementWebClient.Controllers
 {
@@ -13,21 +15,38 @@ namespace LibraryManagementWebClient.Controllers
         private readonly ILibraryApiService _libraryApiService;
         private readonly IApiService _apiService;
 
+
         public AuthController(ILibraryApiService apiService, IApiService apiService1)
         {
             _libraryApiService = apiService;
             _apiService = apiService1;
         }
 
+        [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
         {
-            // Keep track of where the user should be redirected after login
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole("Admin"))
+                    return RedirectToAction("Index", "Admin");
+
+                if (User.IsInRole("Staff"))
+                    return RedirectToAction("Index", "Staff");
+
+                if (User.IsInRole("Member"))
+                    return RedirectToAction("Index", "Home");
+
+                return RedirectToAction("Index", "Home");
+            }
+
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<IActionResult> Login(ViewModels.LoginViewModel model, string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
@@ -86,7 +105,7 @@ namespace LibraryManagementWebClient.Controllers
                 return member.Role switch
                 {
                     "Admin" => RedirectToAction("Index", "Admin"),
-                    "Staff" => RedirectToAction("Index", "Dashboard"),
+                    "Staff" => RedirectToAction("Index", "Home"),
                     "Member" => RedirectToAction("Index", "Home"),
                     "Guest" => RedirectToAction("Guest", "AccessDenied"),
                     _ => RedirectToAction("Index", "Home")
@@ -100,30 +119,53 @@ namespace LibraryManagementWebClient.Controllers
         }
 
 
-
+        [AllowAnonymous]
         public IActionResult Register()
         {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole("Admin"))
+                    return RedirectToAction("Index", "Admin");
+
+                if (User.IsInRole("Staff"))
+                    return RedirectToAction("Index", "Home");
+
+                if (User.IsInRole("Member"))
+                    return RedirectToAction("Index", "Home");
+
+                return RedirectToAction("Index", "Home");
+            }
+
             return View();
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Register(RegisterViewModel model)
+        [AllowAnonymous]
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
-                // Simple registration logic - in real app, save to database
-                if (RegisterUser(model))
+                if (string.IsNullOrEmpty(model.Email) || !model.Email.EndsWith("@fpt.edu.vn", StringComparison.OrdinalIgnoreCase))
+                {
+                    ModelState.AddModelError("Email", "Email must be an FPT student email (ending in @fpt.edu.vn).");
+                    return View(model);
+                }
+
+                var response = await _apiService.RegisterAsync(model);
+
+                if (response.IsSuccessStatusCode)
                 {
                     TempData["Success"] = "Registration successful! Please log in.";
                     return RedirectToAction(nameof(Login));
                 }
 
-                ModelState.AddModelError(string.Empty, "Registration failed. Email might already be in use.");
+                var error = await response.Content.ReadAsStringAsync();
+                ModelState.AddModelError(string.Empty, $"Registration failed: {error}");
             }
 
             return View(model);
         }
+
 
         public async Task<IActionResult> Logout()
         {
@@ -135,13 +177,6 @@ namespace LibraryManagementWebClient.Controllers
         public IActionResult AccessDenied()
         {
             return View();
-        }
-
-        private bool RegisterUser(RegisterViewModel model)
-        {
-            // Simple demo registration - replace with database save
-            // For demo purposes, we'll just return true
-            return true;
         }
     }
 }

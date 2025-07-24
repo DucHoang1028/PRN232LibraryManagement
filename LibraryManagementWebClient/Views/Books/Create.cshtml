@@ -55,6 +55,28 @@
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
+                                <label class="form-label d-flex justify-content-between align-items-center">
+                                    <span>Authors *</span>
+                                    <button type="button" class="btn btn-sm btn-outline-primary px-2 py-1"
+                                            title="Add new author" onclick="window.location.href='@Url.Action("Create", "Author")'">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </label>
+                                @* <select name="SelectedAuthorIds" class="form-select select2-authors" multiple="multiple" style="width: 100%"> *@
+                                @*     @foreach (var author in ViewBag.Authors as List<Author>) *@
+                                @*     { *@
+                                @*         <option value="@author.AuthorId"> *@
+                                @*             @author.FirstName @author.LastName *@
+                                @*         </option> *@
+                                @*     } *@
+                                @* </select> *@
+                                <div class="form-text">Type to search authors. Hold Ctrl (Cmd) to select multiple.</div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
                                 <label asp-for="Language" class="form-label">Language *</label>
                                 <input asp-for="Language" class="form-control" placeholder="e.g., English">
                                 <span asp-validation-for="Language" class="text-danger"></span>

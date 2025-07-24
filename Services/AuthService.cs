@@ -39,6 +39,11 @@ namespace Services
 
         public async Task<(bool Succeeded, string? ErrorMessage)> RegisterUserAsync(RegisterRequest request)
         {
+            if (!request.Email.EndsWith("@fpt.edu.vn", StringComparison.OrdinalIgnoreCase) &&
+                !request.Email.EndsWith("@fe.edu.vn", StringComparison.OrdinalIgnoreCase))
+            {
+                return (false, "Email must be a valid FPT student or staff email (@fpt.edu.vn or @fe.edu.vn).");
+            }
             var identityUser = new IdentityUser
             {
                 UserName = request.Email,

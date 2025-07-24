@@ -11,5 +11,6 @@ namespace LibraryManagementWebClient.Services
 
         Task<Member?> FindUserByIdAsync(Guid id);
         Task<bool> UpdateUserAsync(Guid id, Member member);
+        Task<HttpResponseMessage> RegisterAsync(RegisterViewModel model);
     }
 }

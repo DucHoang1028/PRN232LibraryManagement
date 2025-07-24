@@ -36,7 +36,7 @@ namespace DataAccessObjects
                     .Include(m => m.Loans)
                     .Include(m => m.Reservations)
                     .Include(m => m.Fines)
-                    .FirstOrDefault(m => m.MemberId == memberId && m.IsActive);
+                    .FirstOrDefault(m => m.MemberId == memberId);
             }
             catch (Exception ex)
             {

@@ -70,6 +70,25 @@ namespace LibraryManagementWebClient.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Unban(string id)
+        {
+            Guid userId = Guid.Parse(id);
+            var user = await _apiService.FindUserByIdAsync(userId);
+            if (user == null) return NotFound();
+
+            user.IsActive = true;
+            var success = await _apiService.UpdateUserAsync(userId, user);
+            if (!success)
+            {
+                TempData["Error"] = "Failed to unban user.";
+                return RedirectToAction("Index");
+            }
+
+            TempData["Success"] = "User unbanned successfully.";
+            return RedirectToAction("Index");
+        }
+
 
     }
 }

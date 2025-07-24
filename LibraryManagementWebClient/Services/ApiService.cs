@@ -90,5 +90,14 @@ namespace LibraryManagementWebClient.Services
 
             return response.IsSuccessStatusCode;
         }
+
+        public async Task<HttpResponseMessage> RegisterAsync(RegisterViewModel model)
+        {
+            var json = JsonSerializer.Serialize(model);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            return await _httpClient.PostAsync("api/auth/register", content); // Adjust URL to your actual API route
+        }
+
     }
 }

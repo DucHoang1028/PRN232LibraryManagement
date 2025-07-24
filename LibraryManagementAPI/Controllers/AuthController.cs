@@ -1,4 +1,5 @@
 ﻿using Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Services;
@@ -17,18 +18,20 @@ namespace LibraryManagementAPI.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> RegisterUser([FromBody]RegisterRequest user)
+        [AllowAnonymous]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
-            var result = await _authService.RegisterUserAsync(user);
+            var result = await _authService.RegisterUserAsync(model);
 
             if (!result.Succeeded)
-                return BadRequest(new { Message = result.ErrorMessage });
+                return BadRequest(new { success = false, message = result.ErrorMessage });
 
-            return Ok(new { Message = "User registered successfully" });
+            return Ok(new { success = true, message = "Registration successful!" });
         }
+
+
 
         [HttpPost("login")]
         public async Task<IActionResult> LoginUser([FromBody] LoginRequest login)

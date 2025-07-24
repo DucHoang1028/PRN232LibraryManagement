@@ -31,6 +31,46 @@
 							</a>
 						</li>
 					</ul>
+                    <ul class="navbar-nav">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item" style="margin-top:8px">
+                                <span class="navbar-text text-light me-3">
+                                    <i class="bi bi-person-circle"></i>
+                                    Hello, @User.Claims.FirstOrDefault(c => c.Type == "FirstName")?.Value!                                </span>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-gear"></i> Menu
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><span class="dropdown-item-text text-muted">Role: @User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value</span></li>
+                                    <li><span class="dropdown-item-text text-muted">Member ID: @User.Claims.FirstOrDefault(c => c.Type == "MemberId")?.Value</span></li>
+                                    <li><span class="dropdown-item-text text-muted">Joined: @User.Claims.FirstOrDefault(c => c.Type == "JoinDate")?.Value</span></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-controller="Auth" asp-action="Logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link btn btn-outline-light btn-sm" asp-controller="Auth" asp-action="Logout">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Auth" asp-action="Login">
+                                    <i class="bi bi-box-arrow-in-right"></i> Login
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Auth" asp-action="Register">
+                                    <i class="bi bi-person-plus"></i> Register
+                                </a>
+                            </li>
+                        }
+                    </ul>
 				</div>
 		</nav>
 	</header>
