@@ -59,6 +59,8 @@ namespace LibraryManagementWebClient.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    member.IsActive = true;
+                    member.CreatedDate = DateTime.UtcNow;
                     await _apiService.CreateMemberAsync(member);
                     TempData["Success"] = "Member created successfully!";
                     return RedirectToAction(nameof(Index));
@@ -152,5 +154,7 @@ namespace LibraryManagementWebClient.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+
     }
 } 

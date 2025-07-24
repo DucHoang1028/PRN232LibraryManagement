@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,7 +19,6 @@ namespace DataAccessObjects
                     .Include(m => m.Loans)
                     .Include(m => m.Reservations)
                     .Include(m => m.Fines)
-                    .Where(m => m.IsActive)
                     .ToList();
             }
             catch (Exception ex)
@@ -37,7 +36,7 @@ namespace DataAccessObjects
                     .Include(m => m.Loans)
                     .Include(m => m.Reservations)
                     .Include(m => m.Fines)
-                    .FirstOrDefault(m => m.MemberId == memberId && m.IsActive);
+                    .FirstOrDefault(m => m.MemberId == memberId);
             }
             catch (Exception ex)
             {
@@ -120,6 +119,7 @@ namespace DataAccessObjects
                 existingMember.Phone = member.Phone;
                 existingMember.Address = member.Address;
                 existingMember.Role = member.Role;
+                existingMember.IsActive = member.IsActive;
                 existingMember.UpdatedDate = DateTime.UtcNow;
 
                 context.SaveChanges();
@@ -130,6 +130,7 @@ namespace DataAccessObjects
                 throw new Exception(ex.Message);
             }
         }
+
 
         public static bool DeleteMember(Guid memberId)
         {
